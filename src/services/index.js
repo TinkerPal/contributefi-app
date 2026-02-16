@@ -113,6 +113,13 @@ export function createOnChainQuest(payload, communityId) {
   );
 }
 
+export function loadContractSpec(payload) {
+  return api.post(
+    `${import.meta.env.VITE_BASE_URL}/quests/load-contract-spec`,
+    payload,
+  );
+}
+
 export function createTechnicalQuest(payload, communityId) {
   return api.post(
     `${import.meta.env.VITE_BASE_URL}/quests/${communityId}/technical`,

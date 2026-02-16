@@ -32,3 +32,7 @@ export const maskEmail = (email) => {
 
   return `${start}${maskedMiddle}${end}`;
 };
+
+export const handleCopy = (value) => {
+  navigator.clipboard.writeText(value);
+};

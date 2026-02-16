@@ -107,7 +107,7 @@ export const validateUrl = (value) => {
   }
 };
 
-export const hydrateGrowthQuestData = (data) => {
+export const hydrateQuestData = (data) => {
   if (!data) return data;
 
   return {
@@ -131,6 +131,10 @@ export const mapFormToCreateGrowthQuestPayload = (data) => {
 
   if (data.tokenContract) {
     payload.tokenContract = data.tokenContract;
+  }
+
+  if (data.symbol) {
+    payload.symbol = data.symbol;
   }
 
   if (data.numberOfWinners) {
@@ -239,6 +243,10 @@ export const mapFormToCreateOnChainQuestPayload = (data) => {
     payload.tokenContract = data.tokenContract;
   }
 
+  if (data.symbol) {
+    payload.symbol = data.symbol;
+  }
+
   if (data.numberOfWinners) {
     payload.numberOfWinners = data.numberOfWinners;
   }
@@ -265,6 +273,14 @@ export const mapFormToCreateOnChainQuestPayload = (data) => {
 
   if (data.contractAddress) {
     payload.contractAddress = data.contractAddress;
+  }
+
+  if (data.networkType) {
+    payload.networkType = data.networkType;
+  }
+
+  if (data.callerAccountId) {
+    payload.callerAccountId = data.callerAccountId;
   }
 
   // ----------------------------

@@ -30,7 +30,7 @@ import {
   SELECTION_METHOD,
 } from "@/utils/constants";
 import {
-  hydrateGrowthQuestData,
+  hydrateQuestData,
   mapFormToCreateTechnicalQuestPayload,
 } from "@/utils";
 import { BsFillInfoCircleFill } from "react-icons/bs";
@@ -55,7 +55,7 @@ function TechnicalQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   );
   const [step1Data, setStep1Data] = useState(() => {
     const stored = getItemFromLocalStorage("technicalQuestStep1Data");
-    return stored ? hydrateGrowthQuestData(stored) : null;
+    return stored ? hydrateQuestData(stored) : null;
   });
 
   const [openTokenSelectorModal, setOpenTokenSelectorModal] = useState(false);

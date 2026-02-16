@@ -31,7 +31,7 @@ function Communities() {
   const navigate = useNavigate();
 
   const LIMIT = 10;
-  const OFFSET = (currentPage - 1) * LIMIT;
+  const OFFSET = currentPage;
 
   const {
     communities,

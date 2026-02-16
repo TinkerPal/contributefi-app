@@ -5,6 +5,11 @@ export const REWARD_TYPES = [
   { label: "Token", value: "Token" },
 ];
 
+export const NETWORK_TYPES = [
+  { label: "TESTNET", value: "TESTNET" },
+  { label: "PUBLIC", value: "PUBLIC" },
+];
+
 export const TASK_TYPES = [
   { label: "Post on Twitter", value: "Post on Twitter" },
   { label: "Follow on Twitter", value: "Follow on Twitter" },

@@ -125,8 +125,17 @@ function TaskDetailsPage() {
                         </div>
 
                         <p className="flex shrink-0 gap-1.5 font-semibold text-[#2F0FD1]">
-                          <img src="/Gift.svg" alt="" />
-                          {/* {task.amount} XLM 80 XLM */}
+                          {/* <img src="/Gift.svg" alt="" /> */}
+                          {quest?.rewardType === "Token" &&
+                            quest.tokensPerWinner &&
+                            quest.tokensPerWinner +
+                              " " +
+                              quest?.symbol +
+                              " Per Winner"}
+
+                          {quest?.rewardType === "Points" &&
+                            quest?.pointsPerWinner &&
+                            quest?.pointsPerWinner + " Points Per Winner"}
                         </p>
                       </div>
                     </div>
@@ -195,7 +204,16 @@ function TaskDetailsPage() {
                               <p
                                 className={`${task?.userProgress?.completed ? "text-[#1C097D]" : "text-white"}`}
                               >
-                                {task?.title}
+                                {task?.title}{" "}
+                                <span className="text-white">
+                                  {quest?.rewardType === "Token" &&
+                                    task.tokensPerTask &&
+                                    `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                  {quest?.rewardType === "Points" &&
+                                    task?.pointsPerTask &&
+                                    `(${task?.pointsPerTask + " Points"})`}
+                                </span>
                               </p>
 
                               {task?.userProgress?.completed ? (
@@ -216,7 +234,16 @@ function TaskDetailsPage() {
                               <p
                                 className={`${task?.userProgress?.completed ? "text-[#1C097D]" : "text-white"}`}
                               >
-                                {task?.title}
+                                {task?.title}{" "}
+                                <span className="text-white">
+                                  {quest?.rewardType === "Token" &&
+                                    task.tokensPerTask &&
+                                    `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                  {quest?.rewardType === "Points" &&
+                                    task?.pointsPerTask &&
+                                    `(${task?.pointsPerTask + " Points"})`}
+                                </span>
                               </p>
 
                               {task?.userProgress?.completed ? (
@@ -246,7 +273,18 @@ function TaskDetailsPage() {
                                     className={`cursor-pointer bg-[#2F0FD1] px-8 py-4 text-white hover:no-underline`}
                                   >
                                     <p className="flex gap-1">
-                                      <span>{task.title}</span>
+                                      <span>
+                                        {task.title}{" "}
+                                        <span className="text-white">
+                                          {quest?.rewardType === "Token" &&
+                                            task.tokensPerTask &&
+                                            `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                          {quest?.rewardType === "Points" &&
+                                            task?.pointsPerTask &&
+                                            `(${task?.pointsPerTask + " Points"})`}
+                                        </span>
+                                      </span>
                                     </p>
                                   </AccordionTrigger>
                                   <AccordionContent className="flex flex-col gap-4 rounded-xl bg-white px-[30px] py-4 text-[18px] font-normal">
@@ -303,7 +341,18 @@ function TaskDetailsPage() {
                                 >
                                   <AccordionTrigger className="cursor-pointer bg-[#2F0FD1] px-8 py-4 text-white hover:no-underline">
                                     <p className="flex gap-1">
-                                      <span>{task.title}</span>
+                                      <span>
+                                        {task.title}{" "}
+                                        <span className="text-white">
+                                          {quest?.rewardType === "Token" &&
+                                            task.tokensPerTask &&
+                                            `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                          {quest?.rewardType === "Points" &&
+                                            task?.pointsPerTask &&
+                                            `(${task?.pointsPerTask + " Points"})`}
+                                        </span>
+                                      </span>
                                     </p>
                                   </AccordionTrigger>
                                   <AccordionContent className="flex flex-col gap-4 rounded-xl bg-white px-[30px] py-4 text-[18px] font-normal">
@@ -361,7 +410,18 @@ function TaskDetailsPage() {
                                 >
                                   <AccordionTrigger className="cursor-pointer bg-[#2F0FD1] px-8 py-4 text-white hover:no-underline">
                                     <p className="flex gap-1">
-                                      <span>{task.title}</span>
+                                      <span>
+                                        {task.title}{" "}
+                                        <span className="text-white">
+                                          {quest?.rewardType === "Token" &&
+                                            task.tokensPerTask &&
+                                            `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                          {quest?.rewardType === "Points" &&
+                                            task?.pointsPerTask &&
+                                            `(${task?.pointsPerTask + " Points"})`}
+                                        </span>
+                                      </span>
                                     </p>
                                   </AccordionTrigger>
                                   <AccordionContent className="flex flex-col gap-4 rounded-xl bg-white px-[30px] py-4 text-[18px] font-normal">
@@ -412,7 +472,16 @@ function TaskDetailsPage() {
                               <p
                                 className={`${task?.userProgress?.completed ? "text-[#1C097D]" : "text-white"}`}
                               >
-                                {task?.title}
+                                {task?.title}{" "}
+                                <span className="text-white">
+                                  {quest?.rewardType === "Token" &&
+                                    task.tokensPerTask &&
+                                    `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                  {quest?.rewardType === "Points" &&
+                                    task?.pointsPerTask &&
+                                    `(${task?.pointsPerTask + " Points"})`}
+                                </span>
                               </p>
 
                               {task?.userProgress?.completed ? (
@@ -440,7 +509,18 @@ function TaskDetailsPage() {
                                 >
                                   <AccordionTrigger className="cursor-pointer bg-[#2F0FD1] px-8 py-4 text-white hover:no-underline">
                                     <p className="flex gap-1">
-                                      <span>{task.title}</span>
+                                      <span>
+                                        {task.title}{" "}
+                                        <span className="text-white">
+                                          {quest?.rewardType === "Token" &&
+                                            task.tokensPerTask &&
+                                            `(${task.tokensPerTask + " " + quest?.symbol})`}
+
+                                          {quest?.rewardType === "Points" &&
+                                            task?.pointsPerTask &&
+                                            `(${task?.pointsPerTask + " Points"})`}
+                                        </span>
+                                      </span>
                                     </p>
                                   </AccordionTrigger>
                                   <AccordionContent className="flex flex-col gap-4 rounded-xl bg-white px-[30px] py-4 text-[18px] font-normal">

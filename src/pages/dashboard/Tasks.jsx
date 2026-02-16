@@ -27,7 +27,7 @@ function Tasks() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const LIMIT = 10;
-  const OFFSET = (currentPage - 1) * LIMIT;
+  const OFFSET = currentPage;
 
   const {
     data: questData,
@@ -80,7 +80,7 @@ function Tasks() {
 
         <div className="space-y-4 rounded-[4px] p-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="w-full xl:order-2 xl:w-fit">
+            <div className="w-full lg:hidden xl:order-2 xl:w-fit">
               <CustomSearch placeholder="Search task" />
             </div>
 

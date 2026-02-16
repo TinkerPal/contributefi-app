@@ -166,6 +166,14 @@ function DashboardLayout() {
             </div>
           )}
 
+          {currentPath === "tasks" && !taskId && (
+            <div className="hidden items-center gap-3 lg:flex lg:flex-row">
+              <div>
+                <CustomSearch placeholder="Search task" />
+              </div>
+            </div>
+          )}
+
           {isAuthenticated && (
             <>
               <div className="flex flex-col items-center gap-4 sm:flex-row">

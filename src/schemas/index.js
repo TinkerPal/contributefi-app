@@ -377,6 +377,12 @@ export const CreateOnChainQuestSchema = z
       .refine((val) => ["Token", "Points"].includes(val), {
         message: "Invalid reward type",
       }),
+    networkType: z
+      .string()
+      .nonempty("Network type is required")
+      .refine((val) => ["TESTNET", "PUBLIC"].includes(val), {
+        message: "Invalid network type",
+      }),
     tokenContract: z.string().nullish(),
     numberOfWinners: numberOrNullSchema,
     winnerSelectionMethod: z.string().nullish(),

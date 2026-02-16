@@ -6,8 +6,13 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
+import { useLocation } from "react-router";
+import { toast } from "react-toastify";
+import { handleCopy } from "@/lib/utils";
 
 function QuestSuccess({ openQuestSuccess, setOpenQuestSuccess }) {
+  const location = useLocation();
+
   return (
     <Dialog open={openQuestSuccess} onOpenChange={setOpenQuestSuccess}>
       <DialogContent className="scrollbar-hidden max-h-[calc(100vh-150px)] overflow-scroll bg-white sm:max-w-[668px]">
@@ -43,6 +48,10 @@ function QuestSuccess({ openQuestSuccess, setOpenQuestSuccess }) {
               size="lg"
               type="submit"
               className="w-[48%]"
+              onClick={() => {
+                handleCopy(`https://app.contribute.fi${location.pathname}`);
+                toast.success("Copied");
+              }}
             >
               Copy Link
             </Button>

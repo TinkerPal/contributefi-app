@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "../ui/button";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
-import { IoIosArrowForward } from "react-icons/io";
+import { IoIosArrowForward, IoIosRefreshCircle } from "react-icons/io";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { CreateOnChainQuestSchema } from "@/schemas";
@@ -26,46 +26,55 @@ import {
 import { FaArrowLeftLong } from "react-icons/fa6";
 import {
   formatDateToYYYYMMDD,
-  hydrateGrowthQuestData,
+  hydrateQuestData,
   mapFormToCreateOnChainQuestPayload,
 } from "@/utils";
 import { IoChevronDown, IoChevronUp } from "react-icons/io5";
 import {
+  NETWORK_TYPES,
   REWARD_MODES,
   REWARD_TYPES,
-  TASK_TYPES,
   VERIFICATION_MODES,
   WINNER_SELECTION_METHOD,
 } from "@/utils/constants";
 import { BsFillInfoCircleFill } from "react-icons/bs";
-import { useCreateOnChainQuest } from "@/hooks/useCreateQuest";
+import {
+  useCreateOnChainQuest,
+  useLoadContractSpec,
+} from "@/hooks/useCreateQuest";
 import TokenSelectorModal from "./TokenSelectorModal";
+import { RxCaretDown } from "react-icons/rx";
+import { toast } from "react-toastify";
 
 function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
   const side = isDesktop ? "right" : "bottom";
   const [collapsedTasks, setCollapsedTasks] = useState({});
-  const [onChainQuestStep, setOnChainQuestStep] = useState(
+  const [openTokenSelectorModal, setOpenTokenSelectorModal] = useState(false);
+  const [rewardToken, setRewardToken] = useState(
+    getItemFromLocalStorage("rewardToken") || null,
+  );
+  const [step, setStep] = useState(
     getItemFromLocalStorage("onChainQuestStep") || 1,
   );
   const [step1Data, setStep1Data] = useState(() => {
     const stored = getItemFromLocalStorage("onChainQuestStep1Data");
-    return stored ? hydrateGrowthQuestData(stored) : null;
+    return stored ? hydrateQuestData(stored) : null;
   });
-
-  const [openTokenSelectorModal, setOpenTokenSelectorModal] = useState(false);
-  const [rewardToken, setRewardToken] = useState(null);
-
-  const handleChangeToken = () => {
-    setOpenTokenSelectorModal(true);
-  };
+  const [selectedSpecs, setSelectedSpecs] = useState(
+    getItemFromLocalStorage("selectedSpecs") || {},
+  );
 
   const toggleTask = (index) => {
     setCollapsedTasks((prev) => ({
       ...prev,
       [index]: !prev[index],
     }));
+  };
+
+  const handleChangeToken = () => {
+    setOpenTokenSelectorModal(true);
   };
 
   const {
@@ -81,7 +90,9 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       questTitle: "",
       questDescription: "",
       rewardType: "Points",
+      networkType: "PUBLIC",
       tokenContract: "",
+      symbol: "",
       numberOfWinners: "",
       winnerSelectionMethod: "Random",
       makeConcurrent: false,
@@ -97,11 +108,15 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       callerAccountId: "",
       tasks: [
         {
+          description: "",
           function: "",
+          functionSpec: {},
         },
       ],
     },
   });
+
+  console.log({ errors });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -109,10 +124,20 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   });
 
   const onSubmit = (data) => {
-    setItemInLocalStorage("onChainQuestStep1Data", data);
-    setOnChainQuestStep(2);
-    setStep1Data(data);
+    setItemInLocalStorage("onChainQuestStep1Data", {
+      ...data,
+      tokenContract: rewardToken?.contract,
+      symbol: rewardToken?.code,
+    });
+    setItemInLocalStorage("selectedSpecs", selectedSpecs);
+    setStep(2);
+    setStep1Data({
+      ...data,
+      tokenContract: rewardToken?.contract,
+      symbol: rewardToken?.code,
+    });
     setItemInLocalStorage("onChainQuestStep", 2);
+    setItemInLocalStorage("rewardToken", rewardToken);
   };
 
   const rewardType = watch("rewardType");
@@ -121,6 +146,8 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const rewardAllWithPoints = watch("rewardAllWithPoints");
   const extraPoints = watch("extraPoints");
   const verificationMode = watch("verificationMode");
+  const contractAddress = watch("contractAddress");
+  const networkType = watch("networkType");
   const tasks = watch("tasks");
   const tasksLength = tasks.length;
 
@@ -143,7 +170,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   }, [rewardType, setValue]);
 
   useEffect(() => {
-    if (onChainQuestStep !== 2 || !step1Data) return;
+    if (step !== 2 || !step1Data) return;
 
     setStep1Data((prev) => {
       const updated = {
@@ -215,12 +242,21 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
   const handlePublishQuest = async () => {
     try {
-      const payload = JSON.parse(
+      let payload = JSON.parse(
         JSON.stringify(mapFormToCreateOnChainQuestPayload(step1Data)),
       );
 
+      payload = {
+        ...payload,
+        tasks: payload.tasks.map((task, index) => ({
+          ...task,
+          functionSpec: selectedSpecs[index] || null,
+        })),
+      };
+
+      console.log({ payload });
+
       setIsSubmitting(true);
-      // await createOnChainQuest(payload, communityId);
       await createQuest({
         payload,
         communityId,
@@ -233,9 +269,12 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
       removeItemFromLocalStorage("growthQuestStep");
       removeItemFromLocalStorage("growthQuestStep1Data");
+      removeItemFromLocalStorage("rewardToken");
+      removeItemFromLocalStorage("selectedSpecs");
     } catch (error) {
       console.error("Failed to create growth quest", error);
       // TODO: toast / error UI
+      setIsSubmitting(false);
     }
   };
 
@@ -251,6 +290,72 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   }, [rewardToken, setValue]);
 
   console.log({ rewardToken });
+
+  const [specs, setSpecs] = useState([]);
+
+  const [loadingSpec, setLoadingSpec] = useState(false);
+  const { mutateAsync: loadContractSpec } = useLoadContractSpec();
+
+  useEffect(() => {
+    const loadSpec = async () => {
+      if (contractAddress.length === 56 && open) {
+        try {
+          const payload = { contractId: contractAddress, networkType };
+
+          setLoadingSpec(true);
+          const res = await loadContractSpec({ payload });
+
+          setSpecs(res?.data?.content);
+          setLoadingSpec(false);
+          toast.success("Specs loaded successfully");
+
+          console.log({ res });
+        } catch (error) {
+          console.error({ error });
+          setLoadingSpec(false);
+          toast.error("Failed to load spec");
+        }
+      }
+    };
+
+    loadSpec();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [contractAddress, networkType]);
+
+  // const handleLoadSpec = async () => {
+  //   console.log({ contractAddress, networkType });
+
+  //   try {
+  //     const payload = { contractId: contractAddress, networkType };
+
+  //     setLoadingSpec(true);
+  //     const res = await loadContractSpec({ payload });
+
+  //     setSpecs(res?.data?.content);
+  //     setLoadingSpec(false);
+  //     toast.success("Specs loaded successfully");
+
+  //     console.log({ res });
+  //   } catch (error) {
+  //     console.error({ error });
+  //     setLoadingSpec(false);
+  //     toast.error("Failed to load spec");
+  //   }
+  // };
+
+  const handleSpecSelection = (taskIndex, specData) => {
+    setSelectedSpecs((prev) => ({
+      ...prev,
+      [taskIndex]: {
+        name: specData.name,
+        doc: specData.doc,
+        inputs: specData.inputs,
+        outputs: specData.outputs,
+      },
+    }));
+  };
+
+  console.log({ specs });
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -274,13 +379,13 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
         className={`bg-white ${side === "bottom" ? "h-[80%]" : "sm:max-w-xl"} overflow-scroll`}
       >
         <SheetHeader className="bg-white px-4 shadow">
-          {onChainQuestStep === 2 || onChainQuestStep === 3 ? (
+          {step === 2 || step === 3 ? (
             <>
-              {onChainQuestStep === 2 && (
+              {step === 2 && (
                 <FaArrowLeftLong
                   className="cursor-pointer text-3xl text-[#050215]"
                   onClick={() => {
-                    if (onChainQuestStep === 2) {
+                    if (step === 2) {
                       setItemInLocalStorage("onChainQuestStep", 1);
                       if (!extraPoints) {
                         setValue("rewardAllWithPoints", false);
@@ -288,7 +393,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     } else {
                       setItemInLocalStorage("onChainQuestStep", 2);
                     }
-                    setOnChainQuestStep((prev) => prev - 1);
+                    setStep((prev) => prev - 1);
                   }}
                 />
               )}
@@ -312,7 +417,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
           )}
         </SheetHeader>
 
-        {onChainQuestStep === 1 ? (
+        {step === 1 ? (
           <>
             <form
               className="grid gap-5 px-4 py-4"
@@ -381,42 +486,6 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                   }
                 />
               )}
-
-              {/* {rewardType === "Token" && (
-                <CustomInput
-                  label="Token Contract"
-                  placeholder="000000000000000000000"
-                  type="text"
-                  error={errors.tokenContract?.message}
-                  {...register("tokenContract")}
-                  className={rewardType !== "Token" ? "hidden" : ""}
-                />
-              )} */}
-
-              {/* {rewardType === "Token" && (
-                <CustomInput
-                  label="Token Contract"
-                  placeholder="000000000000000000000"
-                  type="text"
-                  error={errors.tokenContract?.message}
-                  {...register("tokenContract")}
-                  className={rewardType !== "Token" ? "hidden" : ""}
-                  defaultValue={rewardToken?.contract.slice(0, 20)}
-                  onFocus={handleChangeToken}
-                  token={
-                    rewardToken && (
-                      <div className="flex items-center gap-2 rounded-sm bg-white px-2 py-1 text-sm text-black border shadow">
-                        <img
-                          src={rewardToken?.icon}
-                          alt={rewardToken?.code}
-                          className="h-3 w-3"
-                        />
-                        {rewardToken?.name}
-                      </div>
-                    )
-                  }
-                />
-              )} */}
 
               {rewardType === "Token" && (
                 <div className={`grid gap-5 sm:grid-cols-2`}>
@@ -532,12 +601,29 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 )}
               />
 
+              <CustomSelect
+                label="Network Type"
+                placeholder="Select"
+                options={NETWORK_TYPES}
+                error={errors.networkType?.message}
+                register={register("networkType")}
+              />
+
               <CustomInput
                 label="Contract Address"
                 placeholder="Enter Contract Address"
                 type="text"
                 error={errors.contractAddress?.message}
                 {...register("contractAddress")}
+                // handleClickIcon={handleLoadSpec}
+                icon={
+                  loadingSpec ? (
+                    <IoIosRefreshCircle className="animate-spin" />
+                  ) : (
+                    <IoIosRefreshCircle title="Load spec" />
+                  )
+                }
+                disabled={loadingSpec}
               />
 
               {verificationMode === "Observe Account Calls" && (
@@ -659,9 +745,12 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                       <CustomSelect
                         label="Function Name"
                         placeholder="Select"
-                        options={TASK_TYPES}
+                        options={specs}
                         error={errors.tasks?.[index]?.function?.message}
                         register={register(`tasks.${index}.function`)}
+                        onSpecSelect={(specData) =>
+                          handleSpecSelection(index, specData)
+                        }
                       />
 
                       {rewardType === "Token" &&
@@ -788,7 +877,8 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     Token Contract
                   </p>
                   <p className="w-1/2 font-medium text-[#050215]">
-                    {step1Data.tokenContract}
+                    {step1Data.tokenContract.slice(0, 10)}...
+                    {step1Data?.tokenContract.slice(-8)}
                   </p>
                 </div>
               )}
@@ -849,7 +939,8 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     Contract Address
                   </p>
                   <p className="w-1/2 font-medium text-[#050215]">
-                    {step1Data.contractAddress}
+                    {step1Data.contractAddress.slice(0, 10)}...
+                    {step1Data?.contractAddress.slice(-8)}
                   </p>
                 </div>
               )}
@@ -1000,7 +1091,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
             )}
 
             <div className="mt-6 space-y-2 rounded-[8px] bg-[#EDF2FF] px-9 py-6">
-              {onChainQuestStep === 2 && step1Data?.rewardType === "Points" ? (
+              {step === 2 && step1Data?.rewardType === "Points" ? (
                 <>
                   <Button
                     variant="secondary"
@@ -1018,8 +1109,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     {isSubmitting ? "Publishing..." : "Publish Quest"}
                   </Button>
                 </>
-              ) : onChainQuestStep === 2 &&
-                step1Data?.rewardType === "Token" ? (
+              ) : step === 2 && step1Data?.rewardType === "Token" ? (
                 <>
                   <div className="flex items-center justify-between gap-2">
                     <p className="font-[300] text-[#09032A]">
@@ -1045,7 +1135,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     type="submit"
                     className="mt-5 w-full"
                     onClick={() => {
-                      setOnChainQuestStep((prev) => prev + 1);
+                      setStep((prev) => prev + 1);
                       setItemInLocalStorage("onChainQuestStep", 3);
                     }}
                     disabled={rewardAllWithPoints && !extraPoints}
@@ -1055,7 +1145,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 </>
               ) : null}
 
-              {onChainQuestStep === 3 && (
+              {step === 3 && (
                 <>
                   <div className="space-y-1 text-center">
                     <p className="font-[300] text-[#09032A]">

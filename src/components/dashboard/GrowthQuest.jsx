@@ -27,7 +27,7 @@ import {
 import { FaArrowLeftLong } from "react-icons/fa6";
 import {
   formatDateToYYYYMMDD,
-  hydrateGrowthQuestData,
+  hydrateQuestData,
   mapFormToCreateGrowthQuestPayload,
 } from "@/utils";
 import {
@@ -47,16 +47,18 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const [open, setOpen] = useState(false);
   const side = isDesktop ? "right" : "bottom";
   const [collapsedTasks, setCollapsedTasks] = useState({});
+  const [openTokenSelectorModal, setOpenTokenSelectorModal] = useState(false);
+  const [rewardToken, setRewardToken] = useState(
+    getItemFromLocalStorage("rewardToken") || null,
+  );
   const [step, setStep] = useState(
     getItemFromLocalStorage("growthQuestStep") || 1,
   );
   const [step1Data, setStep1Data] = useState(() => {
     const stored = getItemFromLocalStorage("growthQuestStep1Data");
-    return stored ? hydrateGrowthQuestData(stored) : null;
+    return stored ? hydrateQuestData(stored) : null;
   });
 
-  const [openTokenSelectorModal, setOpenTokenSelectorModal] = useState(false);
-  const [rewardToken, setRewardToken] = useState(null);
   const toggleTask = (index) => {
     setCollapsedTasks((prev) => ({
       ...prev,
@@ -82,6 +84,7 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       questDescription: "",
       rewardType: "Points",
       tokenContract: "",
+      symbol: "",
       numberOfWinners: "",
       winnerSelectionMethod: "Random",
       makeConcurrent: false,
@@ -99,6 +102,8 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       ],
     },
   });
+
+  console.log({ errors });
 
   const { fields, append, remove } = useFieldArray({
     control,
@@ -118,6 +123,7 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       symbol: rewardToken?.code,
     });
     setItemInLocalStorage("growthQuestStep", 2);
+    setItemInLocalStorage("rewardToken", rewardToken);
   };
 
   const rewardType = watch("rewardType");
@@ -237,6 +243,7 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
       removeItemFromLocalStorage("growthQuestStep");
       removeItemFromLocalStorage("growthQuestStep1Data");
+      removeItemFromLocalStorage("rewardToken");
     } catch (error) {
       console.error("Failed to create growth quest", error);
       setIsSubmitting(false);
