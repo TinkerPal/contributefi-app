@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { WalletKitService } from "./services/global-service";
+import { WalletKitService } from "../utils/wallet-kit/services/global-service";
 import { useWallet } from "@/hooks/useWallet";
 
 export default function WalletKitModal() {

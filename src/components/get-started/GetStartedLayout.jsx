@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router";
-import WalletKitModal from "@/utils/wallet-kit/WalletKitModal";
+import WalletKitModal from "@/components/WalletKitModal";
 import ScrollToTop from "../ScrollToTop";
 import { useAuth } from "@/hooks/useAuth";
 import Loader from "../Loader";
