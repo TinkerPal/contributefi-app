@@ -13,12 +13,24 @@ export const setItemInLocalStorage = (key, data) => {
   localStorage.setItem(key, JSON.stringify(data));
 };
 
+export const setItemInSessionStorage = (key, data) => {
+  sessionStorage.setItem(key, JSON.stringify(data));
+};
+
 export const getItemFromLocalStorage = (key) => {
   return JSON.parse(localStorage.getItem(key));
 };
 
+export const getItemFromSessionStorage = (key) => {
+  return JSON.parse(sessionStorage.getItem(key));
+};
+
 export const removeItemFromLocalStorage = (key) => {
   localStorage.removeItem(key);
+};
+
+export const removeItemFromSessionStorage = (key) => {
+  sessionStorage.removeItem(key);
 };
 
 export const maskEmail = (email) => {

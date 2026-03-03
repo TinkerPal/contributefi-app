@@ -22,6 +22,7 @@ import { Input } from "../ui/input";
 import { FaPlus } from "react-icons/fa";
 import { ImSpinner5 } from "react-icons/im";
 import ScrollToTop from "../ScrollToTop";
+// import StellarWalletKitModal from "@/utils/wallet-kit/StellarWalletKitModal";
 
 function DashboardLayout() {
   const { user, isAuthenticated, setUser } = useAuth();
@@ -217,6 +218,8 @@ function DashboardLayout() {
       <DashboardContainer>
         <Outlet />
       </DashboardContainer>
+
+      {/* <StellarWalletKitModal /> */}
     </DashboardLayoutContainer>
   );
 }

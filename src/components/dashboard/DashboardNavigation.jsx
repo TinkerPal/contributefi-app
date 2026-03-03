@@ -69,7 +69,7 @@ function DashboardNavigation({
             });
           }}
           to="/"
-          className="block rounded-[8px] bg-red-500 px-6 py-3 font-medium text-white hover:bg-red-600"
+          className="block rounded-[8px] bg-gray-500 px-6 py-3 font-medium text-white hover:bg-gray-600"
         >
           <GoSignOut className="mr-4 inline-block text-2xl" />
           Log Out

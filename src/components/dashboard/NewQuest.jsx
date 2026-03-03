@@ -11,6 +11,7 @@ import GrowthQuest from "./GrowthQuest";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import OnChainQuest from "./OnChainQuest";
 import TechnicalQuest from "./TechnicalQuest";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 function NewQuest({
   sheetIsOpen,
@@ -19,11 +20,20 @@ function NewQuest({
   communityId,
 }) {
   const isDesktop = useIsDesktop();
+  const { requireAuth } = useRequireAuth();
 
   const side = isDesktop ? "right" : "bottom";
 
+  const handleOpenChange = (open) => {
+    if (open) {
+      requireAuth(() => setSheetIsOpen(true));
+    } else {
+      setSheetIsOpen(false);
+    }
+  };
+
   return (
-    <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen}>
+    <Sheet open={sheetIsOpen} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button className="cursor-pointer rounded-md bg-[#2F0FD1] px-8 py-5 hover:bg-[#2F0FD1]/70">
           Create Quest

@@ -677,6 +677,7 @@
     "1": 36000000,
     "14000000": 14000000
   },
+
   "txExplorerUrl": {
     "43113": "https://testnet.snowtrace.io/tx",
     "11155111": "https://sepolia.etherscan.io/tx",
@@ -694,6 +695,7 @@
     "12000000": "soroban",
     "14000000": "soroban"
   },
+
   "chainsArr": ["43113", "43114", "11155111", "12000000", "1", "14000000"],
 
   "tokensDecimals": {
@@ -719,6 +721,7 @@
     "0x2E2A1a3595e4FE73378f1760038503d2010b416f": 6,
     "0x75EcFa41d793843df1C186b4010A0c32b362B81C": 18
   },
+
   "protocolTokens": {
     "0x1c7d4b196cb0c7b01d743fbc6116a902379c7238": "0xb260A989C91786b6d024Abf0D91E284B21d160c7",
     "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E": "0x2E2A1a3595e4FE73378f1760038503d2010b416f",

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { toast } from "react-toastify";
 import { useOnChainTask } from "@/hooks/useOnChainTask";
-import { useStellarWallet } from "@/hooks/useStellarWallet";
 import { IoIosRefreshCircle } from "react-icons/io";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router";
@@ -10,7 +9,7 @@ export default function OnChainTaskInput({ task, quest, userId }) {
   const navigate = useNavigate();
   const location = useLocation();
   const { submitOnChainTask, loading, error } = useOnChainTask();
-  const { address } = useStellarWallet();
+
   const [validationErrors, setValidationErrors] = useState({});
 
   // Collect all input values from the task's function spec
@@ -60,10 +59,10 @@ export default function OnChainTaskInput({ task, quest, userId }) {
       return;
     }
 
-    if (!address) {
-      toast.info("Please connect your wallet using the button in the header");
-      return;
-    }
+    // if (!address) {
+    //   toast.info("Please connect your wallet using the button in the header");
+    //   return;
+    // }
 
     try {
       const userInputs = Object.values(inputs);
@@ -73,7 +72,7 @@ export default function OnChainTaskInput({ task, quest, userId }) {
         quest,
         userInputs,
         userId,
-        walletAddress: address,
+        // walletAddress: address,
       });
 
       toast.success("Task completed successfully!");
@@ -87,7 +86,7 @@ export default function OnChainTaskInput({ task, quest, userId }) {
 
   const functionInputs = task?.payload?.functionSpec?.inputs || [];
   const hasInputs = functionInputs.length > 0;
-  const isWalletConnected = !!address;
+  const isWalletConnected = false;
   const isSubmitDisabled = loading || !hasInputs || !isWalletConnected;
 
   return (

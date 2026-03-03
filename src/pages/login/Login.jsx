@@ -4,20 +4,26 @@ import React, { useContext, useEffect, useState } from "react";
 import { IoMdEyeOff } from "react-icons/io";
 import { IoEye } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { LoginSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { loginUser } from "@/services";
+import {
+  loginUser,
+  // requestWalletChallenge,
+  // verifyWalletLogin,
+} from "@/services";
 import { useAuth } from "@/hooks/useAuth";
-import { PiPlugsConnectedFill } from "react-icons/pi";
 import { WalletContext } from "@/contexts/WalletContext";
 import Loader from "@/components/Loader";
-// import { useSendOtp } from "@/hooks/useSendOtp";
 
 function Login() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const redirectParam = searchParams.get("redirect");
+  const from = location.state?.from?.pathname || redirectParam || "/";
   const { login, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const [revealPassword, setRevealPassword] = useState(false);
@@ -35,7 +41,6 @@ function Login() {
     resolver: zodResolver(LoginSchema),
   });
   const { handleConnectStellarKit } = useContext(WalletContext);
-  // const { resendOTPMutation, resendOTPPending } = useSendOtp();
 
   const { mutate: loginMutation, isPending: loginPending } = useMutation({
     mutationFn: (data) => loginUser(data),
@@ -44,18 +49,17 @@ function Login() {
         if (!data.data.content.isVerified) {
           login({
             token: data.data.content.accessToken.token,
-            email: variable.email,
+            email: data.data.content.email,
             user: null,
             otp: null,
             username: null,
           });
-          // resendOTPMutation({ email: variable.email });
           navigate("/get-started/verify-email");
           toast.success("Kindly verify your email address");
         } else if (!data.data.content.username) {
           login({
             token: data.data.content.accessToken.token,
-            email: variable.email,
+            email: data.data.content.email,
             user: null,
             otp: "123456",
             username: null,
@@ -84,15 +88,66 @@ function Login() {
     },
   });
 
+  // const { mutate: loginWithWalletMutation, isPending: walletLoginPending } =
+  //   useMutation({
+  //     mutationFn: (signedXdr) => verifyWalletLogin(signedXdr),
+
+  //     onSuccess: async (data) => {
+  //       if (data.status === 200) {
+  //         const content = data.data.content;
+
+  //         if (!content.isVerified) {
+  //           login({
+  //             token: content.accessToken.token,
+  //             email: content.email,
+  //             user: null,
+  //             otp: null,
+  //             username: null,
+  //           });
+  //           navigate("/get-started/verify-email");
+  //           toast.success("Kindly verify your email address");
+  //         } else if (!content.username) {
+  //           login({
+  //             token: content.accessToken.token,
+  //             email: content.email,
+  //             user: null,
+  //             otp: "123456",
+  //             username: null,
+  //           });
+  //           navigate("/get-started/username");
+  //           toast.error("Kindly select a username");
+  //         } else {
+  //           login({
+  //             token: content.accessToken.token,
+  //             email: null,
+  //             user: content,
+  //             otp: null,
+  //             username: null,
+  //           });
+  //           navigate("/");
+  //           toast.success("Login successful");
+  //         }
+  //       }
+  //     },
+
+  //     onError: (error) => {
+  //       toast.error(error.response?.data?.message || "Wallet login failed");
+  //     },
+  //   });
+
   const onSubmit = (data) => {
     loginMutation(data);
   };
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/");
+      navigate(from, { replace: true });
     }
-  }, [navigate, isAuthenticated]);
+  }, [navigate, isAuthenticated, from]);
+
+  const handleGoogleLogin = () => {
+    window.location.href = import.meta.env.VITE_GOOGLE_AUTH_URL;
+  };
 
   if (isAuthenticated) return <Loader />;
 
@@ -128,6 +183,7 @@ function Login() {
           </Button>
 
           <Button
+            onClick={handleGoogleLogin}
             className="w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"
@@ -138,14 +194,14 @@ function Login() {
         </div>
 
         <p className="relative flex items-center text-[14px] text-[#525866] before:mr-4 before:flex-1 before:border-t before:border-gray-300 after:ml-4 after:flex-1 after:border-t after:border-gray-300 sm:text-base">
-          Or Continue with Email/Username
+          Or Continue with Email
         </p>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-[32px]">
           <CustomInput
             className="h-[48px]"
-            label="Email Address or Username"
-            placeholder="Enter Email Address or Username"
+            label="Email Address"
+            placeholder="Enter Email Address"
             type="text"
             error={errors.email?.message}
             {...register("email")}

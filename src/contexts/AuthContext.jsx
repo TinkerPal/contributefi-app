@@ -20,8 +20,8 @@ export const AuthProvider = ({ children }) => {
     const savedToken = getItemFromLocalStorage("accessToken");
     const savedUser = getItemFromLocalStorage("user");
 
-    if (savedToken) {
-      setToken(savedToken);
+    if (savedToken || savedUser) {
+      setToken(savedToken || null);
       setUser(savedUser || null);
     }
 

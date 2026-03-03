@@ -4,7 +4,6 @@ import React, { useContext, useState } from "react";
 import { IoMdEyeOff } from "react-icons/io";
 import { IoEye } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
-import { PiPlugsConnectedFill } from "react-icons/pi";
 import { Link, useNavigate } from "react-router";
 import { SignUpSchema } from "@/schemas";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -19,8 +18,7 @@ function CreateAccount() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [revealPassword, setRevealPassword] = useState(false);
-  const { handleConnectStellarKit, selectedSourceChain } =
-    useContext(WalletContext);
+  const { handleConnectStellarKit } = useContext(WalletContext);
 
   const handleClickIcon = () => {
     setRevealPassword((revealPassword) => !revealPassword);
@@ -48,7 +46,6 @@ function CreateAccount() {
               otp: null,
               username: null,
             });
-            // resendOTPMutation({ email: variable.email });
             navigate("/get-started/verify-email");
             toast.success("Kindly verify your email address");
           } else if (!data.data.content.username) {
@@ -73,16 +70,6 @@ function CreateAccount() {
             toast.success("Login successful");
             reset();
           }
-          // login({
-          //   token: data.data.content.accessToken.token,
-          //   email: variable.email,
-          //   user: null,
-          //   otp: null,
-          //   username: null,
-          // });
-          // navigate("/get-started/verify-email");
-          // toast.success("OTP sent successfully");
-          // reset();
         } else {
           toast.error("Something went wrong");
         }
@@ -95,6 +82,10 @@ function CreateAccount() {
 
   const onSubmit = (data) => {
     createAccountMutation(data);
+  };
+
+  const handleGoogleSignup = () => {
+    window.location.href = import.meta.env.VITE_GOOGLE_AUTH_URL;
   };
 
   return (
@@ -114,7 +105,9 @@ function CreateAccount() {
       <div className="space-y-[32px]">
         <div className="space-y-[16px]">
           <Button
-            className="group w-full border-none bg-[#F7F9FD] text-[#09032A]"
+            // onClick={handleWalletRegister}
+            // disabled={walletRegisterPending}
+            className="w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"
             // onClick={() => setIsOpen(true)}
@@ -129,6 +122,7 @@ function CreateAccount() {
           </Button>
 
           <Button
+            onClick={handleGoogleSignup}
             className="w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"

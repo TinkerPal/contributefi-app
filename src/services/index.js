@@ -2,19 +2,16 @@ import api from "@/lib/api";
 
 export function createAccount(data) {
   const requestPayload = {
+    method: "EMAIL",
     email: data.email,
     password: data.password,
   };
 
-  return api.post(
-    `${import.meta.env.VITE_BASE_URL}/auth/email`,
-    requestPayload,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
+  return api.post(`${import.meta.env.VITE_BASE_URL}/auth`, requestPayload, {
+    headers: {
+      "Content-Type": "application/json",
     },
-  );
+  });
 }
 
 export function resendOTP(data) {
@@ -59,16 +56,49 @@ export function checkUsernameAvailability(username) {
   );
 }
 
+export function getUser() {
+  return api.get(`${import.meta.env.VITE_BASE_URL}/users/user`);
+}
+
 export function loginUser(data) {
   const requestPayload = {
+    method: "EMAIL",
     email: data.email,
     password: data.password,
   };
 
-  return api.post(
-    `${import.meta.env.VITE_BASE_URL}/auth/email`,
-    requestPayload,
+  return api.post(`${import.meta.env.VITE_BASE_URL}/auth`, requestPayload);
+}
+
+// export function loginWithWallet(data) {
+//   const requestPayload = {
+//     method: "WALLET",
+//     walletId: data.walletAddress,
+//   };
+
+//   return api.post(`${import.meta.env.VITE_BASE_URL}/auth`, requestPayload);
+// }
+
+// export function registerWithWallet(data) {
+//   console.log({ data });
+//   const requestPayload = {
+//     method: "WALLET",
+//     walletId: data.walletAddress,
+//   };
+
+//   return api.post(`${import.meta.env.VITE_BASE_URL}/auth`, requestPayload);
+// }
+
+export function requestWalletChallenge(walletId) {
+  return api.get(
+    `${import.meta.env.VITE_BASE_URL}/auth/wallet/challenge/${walletId}`,
   );
+}
+
+export function verifyWalletLogin(signedXdr) {
+  return api.post(`${import.meta.env.VITE_BASE_URL}/auth/wallet/verify`, {
+    signedXdr,
+  });
 }
 
 export function createCommunity(data) {
@@ -107,6 +137,7 @@ export function completeTask(payload, taskId) {
 }
 
 export function createOnChainQuest(payload, communityId) {
+  console.log({ payload, communityId });
   return api.post(
     `${import.meta.env.VITE_BASE_URL}/quests/${communityId}/on-chain`,
     payload,
@@ -135,7 +166,7 @@ export const getCommunities = async ({
   searchValue = "",
 } = {}) => {
   const { data } = await api.get(
-    `${import.meta.env.VITE_BASE_URL}/communities?sortBy=createdAt:${sort}&limit=${limit}&offset=${offset}&searchValue=${searchValue}&${communityOwnerId !== "" && `communityOwnerId=${communityOwnerId}`}`,
+    `${import.meta.env.VITE_BASE_URL}/communities?sortBy=createdAt:${sort}&limit=${limit}&offset=${offset}&${searchValue !== "" ? `communityName=${searchValue}` : ""}&${communityOwnerId !== "" ? `communityOwnerId=${communityOwnerId} ` : ""}`,
   );
 
   return data.content;
@@ -145,9 +176,10 @@ export const getQuests = async ({
   limit = 10,
   offset = 1,
   sort = "DESC",
+  isActive,
 } = {}) => {
   const { data } = await api.get(
-    `${import.meta.env.VITE_BASE_URL}/quests?sortBy=createdAt:${sort}&limit=${limit}&offset=${offset}`,
+    `${import.meta.env.VITE_BASE_URL}/quests?sortBy=createdAt:${sort}&limit=${limit}&offset=${offset}&${isActive ? `isActive=${isActive}` : ""}`,
   );
 
   return data.content;
@@ -249,3 +281,17 @@ export const updateBio = (bio) => {
     bio,
   });
 };
+
+export function initSignTransaction(data) {
+  return api.post(
+    `${import.meta.env.VITE_BASE_URL}/quests/init-sign-transaction`,
+    data,
+  );
+}
+
+export function submitTransactionExternal(data) {
+  return api.post(
+    `${import.meta.env.VITE_BASE_URL}/quests/submit-transaction-external`,
+    data,
+  );
+}

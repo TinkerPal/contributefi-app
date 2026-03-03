@@ -3,7 +3,6 @@ import {
   getItemFromLocalStorage,
   removeItemFromLocalStorage,
 } from "@/lib/utils";
-import { toast } from "react-toastify";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
@@ -35,12 +34,12 @@ api.interceptors.response.use(
       removeItemFromLocalStorage("otp");
       removeItemFromLocalStorage("username");
 
-      // Optional toast
-
-      // Hard redirect to avoid broken state
-      window.location.href = "/login";
-
-      toast.error("Session expired. Please login again.");
+      const currentPath = window.location.pathname;
+      const redirectUrl =
+        currentPath !== "/"
+          ? `?redirect=${encodeURIComponent(currentPath)}`
+          : "";
+      window.location.href = `/login${redirectUrl}`;
     }
 
     return Promise.reject(error);

@@ -13,7 +13,7 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 function VerifyEmail() {
-  const { login, token, email } = useAuth();
+  const { login, token, email, otp } = useAuth();
 
   const RESEND_OTP_TIME = 60;
 
@@ -42,6 +42,12 @@ function VerifyEmail() {
       navigate("/get-started");
     }
   }, [navigate, email]);
+
+  useEffect(() => {
+    if (otp) {
+      navigate("/get-started/username");
+    }
+  }, [navigate, otp]);
 
   const {
     register,
@@ -81,11 +87,15 @@ function VerifyEmail() {
 
   const handleResendOTP = () => {
     if (!email || resendOTPPending) return;
-
-    resendOTPMutation({ email });
-
-    setCanResend(false);
-    setSecondsLeft(RESEND_OTP_TIME);
+    resendOTPMutation(
+      { email },
+      {
+        onSuccess: () => {
+          setCanResend(false);
+          setSecondsLeft(RESEND_OTP_TIME);
+        },
+      },
+    );
   };
 
   const onSubmit = (data) => {
@@ -108,29 +118,6 @@ function VerifyEmail() {
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-[32px]">
-        {/* <CustomInput
-          className="h-[48px]"
-          label="Provide OTP"
-          placeholder="Enter OTP"
-          type="text"
-          inputMode="numeric"
-          pattern="\d*"
-          error={errors.otp?.message}
-          {...register("otp")}
-          maxLength={6}
-          onKeyDown={(e) => {
-            if (
-              !/[0-9]/.test(e.key) &&
-              e.key !== "Backspace" &&
-              e.key !== "Tab" &&
-              e.key !== "ArrowLeft" &&
-              e.key !== "ArrowRight"
-            ) {
-              e.preventDefault();
-            }
-          }}
-        /> */}
-
         <CustomInput
           className="h-[48px]"
           label="Provide OTP"
@@ -145,6 +132,7 @@ function VerifyEmail() {
               e.target.value = onlyNumbers;
             },
           })}
+          disabled={resendOTPPending}
         />
 
         <div className="flex flex-col gap-2">
@@ -153,7 +141,7 @@ function VerifyEmail() {
             variant="secondary"
             size="lg"
             type="submit"
-            disabled={verifyEmailPending}
+            disabled={verifyEmailPending || resendOTPPending}
           >
             {verifyEmailPending ? "Processing" : "Submit OTP"}
           </Button>

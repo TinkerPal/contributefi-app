@@ -17,12 +17,13 @@ import { toast } from "react-toastify";
 import { checkUsernameAvailability, createCommunity } from "@/services";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 function CreateCommunityForm() {
   const [open, setOpen] = useState(false);
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
 
   const {
@@ -36,6 +37,7 @@ function CreateCommunityForm() {
 
   const [usernameInput, setUsernameInput] = useState("");
   const [debouncedUsername, setDebouncedUsername] = useState("");
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -54,6 +56,14 @@ function CreateCommunityForm() {
     queryFn: () => checkUsernameAvailability(debouncedUsername),
     enabled: !!debouncedUsername && isCommunityAliasValid,
   });
+
+  useEffect(() => {
+    if (usernameCheckData?.data?.content) {
+      setUsernameAvailable(usernameCheckData.data.content.isAvailable);
+    } else {
+      setUsernameAvailable(null);
+    }
+  }, [usernameCheckData]);
 
   const { mutate: createCommunityMutation, isPending: createCommunityPending } =
     useMutation({
@@ -75,17 +85,22 @@ function CreateCommunityForm() {
     });
 
   const onSubmit = (data) => {
+    if (usernameAvailable === false) {
+      toast.error("Please choose an available username");
+      return;
+    }
     createCommunityMutation(data);
   };
 
   useEffect(() => {
     if (!open) {
       reset();
+      setUsernameInput("");
+      setDebouncedUsername("");
     }
   }, [open, reset]);
 
   const handleUsernameChange = (e) => {
-    // e.target.value = e.target.value.replace(/[^a-zA-Z0-9_]/g, "");
     setUsernameInput(e.target.value);
   };
 
@@ -97,7 +112,7 @@ function CreateCommunityForm() {
         className="w-full"
         onClick={() => {
           if (!isAuthenticated) {
-            navigate("/login");
+            navigate("/login", { state: { from: location } });
             return;
           }
           setOpen(true);
@@ -105,7 +120,7 @@ function CreateCommunityForm() {
       >
         Create Community
       </Button>
-      <DialogContent className="scrollbar-hidden max-h-[calc(100vh-150px)] overflow-scroll bg-white sm:max-w-[668px]">
+      <DialogContent className="scrollbar-hidden max-h-[calc(100vh-150px)] overflow-scroll bg-white p-10 sm:max-w-[980px]">
         <DialogHeader>
           <DialogTitle className="text-left text-[18px] text-[#050215] sm:text-[24px]">
             New Community
@@ -135,29 +150,6 @@ function CreateCommunityForm() {
               {...register("communityUsername", {
                 onChange: handleUsernameChange,
               })}
-              // onKeyDown={(e) => {
-              //   const isAllowed = /^[a-zA-Z0-9_]$/.test(e.key);
-
-              //   const allowedKeys = [
-              //     "Backspace",
-              //     "Tab",
-              //     "ArrowLeft",
-              //     "ArrowRight",
-              //     "Delete",
-              //   ];
-
-              //   if (
-              //     e.key === " " ||
-              //     (!isAllowed && !allowedKeys.includes(e.key))
-              //   ) {
-              //     e.preventDefault();
-              //   }
-              // }}
-              // {...register("communityUsername", {
-              //   onChange: (e) => {
-              //     e.target.value = e.target.value.replace(/[^a-zA-Z0-9_.]/g, "");
-              //   },
-              // })}
             />
 
             {checkingUsername ? (
@@ -208,24 +200,26 @@ function CreateCommunityForm() {
             {...register("instagramPage")}
           />
 
-          <Label className="flex flex-col items-start gap-2 font-light text-[#09032A]">
+          <Label className="flex flex-col items-start gap-2 text-base font-light text-[#09032A]">
             Community Description (Optional)
             <Textarea
-              className="h-[96px] rounded-[12px] border-none bg-[#F7F9FD] px-4 placeholder:text-sm placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0"
+              className="h-[96px] rounded-[12px] border-none bg-[#F7F9FD] px-4 text-base placeholder:text-base placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0"
               placeholder="What's the community about?"
               error={errors.communityDescription?.message}
               {...register("communityDescription")}
             />
           </Label>
 
-          <div className="hidden sm:block"></div>
-          <div className="hidden sm:block"></div>
-
           <Button
-            disabled={createCommunityPending}
+            disabled={
+              createCommunityPending ||
+              checkingUsername ||
+              usernameAvailable === false
+            }
             variant="secondary"
             size="lg"
             type="submit"
+            className="mt-auto ml-auto w-fit"
           >
             {createCommunityPending ? "Processing" : "Proceed"}
           </Button>

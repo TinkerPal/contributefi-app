@@ -47,7 +47,11 @@ function TasksCard({ task, tag }) {
           <div
             className={`w-fit rounded-[4px] px-[12px] py-[5px] text-sm font-normal text-[#313131] ${TASK_TAG_BG[task.category]}`}
           >
-            {task.category}
+            {task.category === "ON_CHAIN"
+              ? "On Chain"
+              : task.category === "GROWTH"
+                ? "Growth"
+                : "Technical"}
           </div>
 
           <div
@@ -63,14 +67,24 @@ function TasksCard({ task, tag }) {
         </div>
 
         <div className="flex items-center gap-2">
-          <p className="flex shrink-0 gap-1.5 font-semibold text-[#2F0FD1]">
+          {/* <p className="flex shrink-0 gap-1.5 font-semibold text-[#2F0FD1]">
             <img src="/Gift.svg" alt="" />
             {task.amount} XLM
-          </p>
-          <div className="flex shrink-0 items-center gap-1">
+          </p> */}
+          {/* <div className="flex shrink-0 items-center gap-1">
             <div className="h-1 w-1 rounded-full bg-[#636366]" />
             <p className="flex gap-1.5 font-semibold text-[#8791A7]">
               <img src="/UsersThree.svg" alt="" /> {task.numberOfMembers}
+            </p>
+          </div> */}
+          <div className="flex shrink-0 items-center gap-1">
+            <p className="flex gap-1.5 text-base font-semibold text-[#8791A7]">
+              <img src="/UsersThree.svg" alt="" />
+              <span className="font-light">
+                {task.rewardType === "Token"
+                  ? `${task.numberOfWinners} winner${task.numberOfWinners > 1 ? "s" : ""}`
+                  : "All participants win"}
+              </span>
             </p>
           </div>
         </div>

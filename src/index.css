@@ -119,8 +119,13 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
-    @apply bg-background font-sans text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  .custom-wallet-btn {
+    @apply h-[48px] w-full cursor-pointer rounded-md bg-[#F7F9FD] px-2 text-[14px] font-semibold text-[#09032A];
   }
 
   .scrollbar-hidden::-webkit-scrollbar {

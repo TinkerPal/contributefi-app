@@ -9,15 +9,16 @@ import {
 import { Button } from "../ui/button";
 import { useIsDesktop } from "@/hooks/useIsDesktop";
 import { IoIosArrowForward, IoIosRefreshCircle } from "react-icons/io";
+import { IoCheckmarkCircle, IoWarning } from "react-icons/io5";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { CreateOnChainQuestSchema } from "@/schemas";
 import CustomInput from "../CustomInput";
 import CustomSelect from "../CustomSelect";
 import { Checkbox, Field, Label, Radio, RadioGroup } from "@headlessui/react";
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import CustomDateSelect from "../CustomDateSelect";
-import { RiDeleteBin6Fill } from "react-icons/ri";
+import { RiArrowDownSFill, RiDeleteBin6Fill } from "react-icons/ri";
 import {
   getItemFromLocalStorage,
   removeItemFromLocalStorage,
@@ -45,8 +46,10 @@ import {
 import TokenSelectorModal from "./TokenSelectorModal";
 import { RxCaretDown } from "react-icons/rx";
 import { toast } from "react-toastify";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
+  const { requireAuth } = useRequireAuth();
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
   const side = isDesktop ? "right" : "bottom";
@@ -241,6 +244,8 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const { mutateAsync: createQuest } = useCreateOnChainQuest();
 
   const handlePublishQuest = async () => {
+    if (!requireAuth()) return;
+
     try {
       let payload = JSON.parse(
         JSON.stringify(mapFormToCreateOnChainQuestPayload(step1Data)),
@@ -248,10 +253,14 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
       payload = {
         ...payload,
-        tasks: payload.tasks.map((task, index) => ({
-          ...task,
-          functionSpec: selectedSpecs[index] || null,
-        })),
+        tasks: payload.tasks.map((task, index) => {
+          const storedSpec = selectedSpecs[index];
+          const specFromSpecs = specs.find((s) => s.name === task.function);
+          return {
+            ...task,
+            functionSpec: storedSpec || specFromSpecs || null,
+          };
+        }),
       };
 
       console.log({ payload });
@@ -294,25 +303,39 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const [specs, setSpecs] = useState([]);
 
   const [loadingSpec, setLoadingSpec] = useState(false);
+  const [specLoadStatus, setSpecLoadStatus] = useState("idle");
+  const lastLoadedRef = useRef("");
   const { mutateAsync: loadContractSpec } = useLoadContractSpec();
 
   useEffect(() => {
     const loadSpec = async () => {
-      if (contractAddress.length === 56 && open) {
+      const addr = contractAddress || step1Data?.contractAddress || "";
+      const net = networkType || step1Data?.networkType || "PUBLIC";
+
+      if (addr.length === 0) {
+        lastLoadedRef.current = "";
+        setSpecs([]);
+        return;
+      }
+
+      if (addr.length === 56 && open && addr !== lastLoadedRef.current) {
         try {
-          const payload = { contractId: contractAddress, networkType };
+          const payload = { contractId: addr, networkType: net };
 
           setLoadingSpec(true);
+          setSpecLoadStatus("loading");
           const res = await loadContractSpec({ payload });
 
           setSpecs(res?.data?.content);
+          lastLoadedRef.current = addr;
           setLoadingSpec(false);
-          toast.success("Specs loaded successfully");
+          setSpecLoadStatus("success");
 
           console.log({ res });
         } catch (error) {
           console.error({ error });
           setLoadingSpec(false);
+          setSpecLoadStatus("error");
           toast.error("Failed to load spec");
         }
       }
@@ -320,7 +343,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
     loadSpec();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contractAddress, networkType]);
+  }, [contractAddress, networkType, open]);
 
   // const handleLoadSpec = async () => {
   //   console.log({ contractAddress, networkType });
@@ -354,8 +377,6 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
       },
     }));
   };
-
-  console.log({ specs });
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -439,13 +460,27 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 {...register("questDescription")}
               />
 
-              <CustomSelect
+              <Controller
+                name="rewardType"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    label="Reward Type"
+                    options={REWARD_TYPES}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.rewardType?.message}
+                  />
+                )}
+              />
+
+              {/* <CustomSelect
                 label="Reward Type"
                 placeholder="Select"
                 options={REWARD_TYPES}
                 error={errors.rewardType?.message}
                 register={register("rewardType")}
-              />
+              /> */}
 
               <TokenSelectorModal
                 openTokenSelectorModal={openTokenSelectorModal}
@@ -469,7 +504,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                   }
                   onFocus={handleChangeToken}
                   handleClickIcon={() => {}}
-                  icon={<RxCaretDown />}
+                  icon={<RiArrowDownSFill className="size-6 text-[#B2B9C7]" />}
                   token={
                     rewardToken && (
                       <div className="flex w-full items-center gap-2 text-sm text-black">
@@ -496,18 +531,33 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     error={errors.numberOfWinners?.message}
                     {...register("numberOfWinners", { valueAsNumber: true })}
                   />
-                  <CustomSelect
+
+                  <Controller
+                    name="winnerSelectionMethod"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomSelect
+                        label="Winner Selection Method"
+                        options={WINNER_SELECTION_METHOD}
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.winnerSelectionMethod?.message}
+                      />
+                    )}
+                  />
+
+                  {/* <CustomSelect
                     label="Winner Selection Method"
                     placeholder="Select"
                     options={WINNER_SELECTION_METHOD}
                     error={errors.winnerSelectionMethod?.message}
                     register={register("winnerSelectionMethod")}
-                  />
+                  /> */}
                 </div>
               )}
 
               <div className="grid gap-2">
-                <div className="flex w-full items-center justify-between text-[14px] font-light text-[#09032A]">
+                <div className="flex w-full items-center justify-between text-base font-light text-[#09032A]">
                   Quest Duration
                   <div className="ml-auto flex items-center gap-2">
                     <p className="text-[14px] font-[300] text-[#09032A]">
@@ -565,7 +615,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 control={control}
                 render={({ field }) => (
                   <div className="grid gap-2">
-                    <p className="flex items-center gap-1 text-[14px] font-light text-[#09032A]">
+                    <p className="flex items-center gap-1 text-base font-light text-[#09032A]">
                       Verification Mode
                       <BsFillInfoCircleFill className="text-[#2F0FD1]" />
                     </p>
@@ -601,12 +651,19 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 )}
               />
 
-              <CustomSelect
-                label="Network Type"
-                placeholder="Select"
-                options={NETWORK_TYPES}
-                error={errors.networkType?.message}
-                register={register("networkType")}
+              <Controller
+                name="networkType"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    label="Network Type"
+                    placeholder="Select"
+                    options={NETWORK_TYPES}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.networkType?.message}
+                  />
+                )}
               />
 
               <CustomInput
@@ -617,8 +674,12 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 {...register("contractAddress")}
                 // handleClickIcon={handleLoadSpec}
                 icon={
-                  loadingSpec ? (
+                  specLoadStatus === "loading" ? (
                     <IoIosRefreshCircle className="animate-spin" />
+                  ) : specLoadStatus === "success" ? (
+                    <IoCheckmarkCircle className="text-green-500" />
+                  ) : specLoadStatus === "error" ? (
+                    <IoWarning className="text-red-500" />
                   ) : (
                     <IoIosRefreshCircle title="Load spec" />
                   )
@@ -641,7 +702,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 control={control}
                 render={({ field }) => (
                   <div className="grid gap-2">
-                    <p className="text-[14px] font-light text-[#09032A]">
+                    <p className="text-base font-light text-[#09032A]">
                       Reward Mode
                     </p>
                     <RadioGroup
@@ -742,7 +803,24 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                         {...register(`tasks.${index}.description`)}
                       />
 
-                      <CustomSelect
+                      <Controller
+                        name={`tasks.${index}.function`}
+                        control={control}
+                        render={({ field }) => (
+                          <CustomSelect
+                            label="Function Name"
+                            options={specs}
+                            value={field.value}
+                            onChange={field.onChange}
+                            error={errors.tasks?.[index]?.function?.message}
+                            onSpecSelect={(specData) =>
+                              handleSpecSelection(index, specData)
+                            }
+                          />
+                        )}
+                      />
+
+                      {/* <CustomSelect
                         label="Function Name"
                         placeholder="Select"
                         options={specs}
@@ -751,7 +829,7 @@ function OnChainQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                         onSpecSelect={(specData) =>
                           handleSpecSelection(index, specData)
                         }
-                      />
+                      /> */}
 
                       {rewardType === "Token" &&
                         rewardMode === "Individual Task Reward" && (

@@ -4,9 +4,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import CustomInput from "../CustomInput";
 import { IoIosRefresh } from "react-icons/io";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 export default function TaskSubmissionForm({ task }) {
   const { mutateAsync: completeTask } = useCompleteTask();
+  const { requireAuth } = useRequireAuth();
 
   const {
     register,
@@ -18,6 +20,8 @@ export default function TaskSubmissionForm({ task }) {
   });
 
   const onSubmit = async (data) => {
+    if (!requireAuth()) return;
+
     await completeTask({
       taskId: task.id,
       payload: { submission: data.submission },

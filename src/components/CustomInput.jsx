@@ -14,18 +14,18 @@ export default function CustomInput({
   ...props
 }) {
   return (
-    <Label className="flex flex-col items-start gap-2 font-light text-[#09032A]">
+    <Label className="flex flex-col items-start gap-2 font-light text-base text-[#001723]">
       {label}
       {prefix ? (
         <div className="relative h-[48px] w-full rounded-[12px]">
-          <span className="absolute top-0 bottom-0 left-0 flex h-full items-center rounded-l-sm bg-[#EDF2FF] px-4 pt-2 text-sm text-[#8791A7]">
+          <span className="absolute flex h-full items-center rounded-l-sm bg-[#EDF2FF] px-4 py-2 text-base text-[#8791A7]">
             {prefix}
           </span>
 
           <Input
             type={type}
             placeholder={placeholder}
-            className={`h-full rounded-[12px] border-none bg-[#F7F9FD] px-4 pl-24 placeholder:text-sm placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-[#aab1c1] ${className}`}
+            className={`h-full rounded-[12px] border-none bg-[#F7F9FD] px-4 pl-24 text-base text-[#09032A] placeholder:text-base placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-[#aab1c1] ${className}`}
             {...props}
           />
           {icon && (
@@ -43,7 +43,7 @@ export default function CustomInput({
             <Input
               type={type}
               placeholder={placeholder}
-              className={`h-full rounded-[12px] border-none bg-[#F7F9FD] px-4 placeholder:text-sm placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-[#ebedf0] ${className}`}
+              className={`h-full rounded-[12px] text-base border-none bg-[#F7F9FD] px-4 text-[#09032A] placeholder:text-base placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0 disabled:cursor-not-allowed disabled:bg-[#ebedf0] ${className}`}
               {...props}
             />
             {icon && (

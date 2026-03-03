@@ -31,7 +31,7 @@ export default function CustomDateSelect({
                 className={`h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]`}
               >
                 {startDate ? startDate.toLocaleDateString() : "Start Date"}
-                <IoMdArrowDropdown />
+                <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />
               </Button>
             </PopoverTrigger>
             <PopoverContent
@@ -65,7 +65,7 @@ export default function CustomDateSelect({
                   className="h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]"
                 >
                   {endDate ? endDate.toLocaleDateString() : "End Date"}
-                  <IoMdArrowDropdown />
+                  <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent

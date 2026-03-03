@@ -41,8 +41,10 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import { useCreateGrowthQuest } from "@/hooks/useCreateQuest";
 import TokenSelectorModal from "./TokenSelectorModal";
 import { RxCaretDown } from "react-icons/rx";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
+  const { requireAuth } = useRequireAuth();
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
   const side = isDesktop ? "right" : "bottom";
@@ -224,6 +226,8 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const { mutateAsync: createQuest } = useCreateGrowthQuest();
 
   const handlePublishQuest = async () => {
+    if (!requireAuth()) return;
+
     try {
       const payload = JSON.parse(
         JSON.stringify(mapFormToCreateGrowthQuestPayload(step1Data)),
@@ -346,13 +350,27 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 {...register("questDescription")}
               />
 
-              <CustomSelect
+              <Controller
+                name="rewardType"
+                control={control}
+                render={({ field }) => (
+                  <CustomSelect
+                    label="Reward Type"
+                    options={REWARD_TYPES}
+                    value={field.value}
+                    onChange={field.onChange}
+                    error={errors.rewardType?.message}
+                  />
+                )}
+              />
+
+              {/* <CustomSelect
                 label="Reward Type"
                 placeholder="Select"
                 options={REWARD_TYPES}
                 error={errors.rewardType?.message}
                 register={register("rewardType")}
-              />
+              /> */}
 
               <TokenSelectorModal
                 openTokenSelectorModal={openTokenSelectorModal}
@@ -403,18 +421,34 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                     error={errors.numberOfWinners?.message}
                     {...register("numberOfWinners", { valueAsNumber: true })}
                   />
+
+                  <Controller
+                    name="winnerSelectionMethod"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomSelect
+                        label="Winner Selection Method"
+                        options={WINNER_SELECTION_METHOD}
+                        value={field.value}
+                        onChange={field.onChange}
+                        error={errors.winnerSelectionMethod?.message}
+                      />
+                    )}
+                  />
+
+                  {/*                                     
                   <CustomSelect
                     label="Winner Selection Method"
                     placeholder="Select"
                     options={WINNER_SELECTION_METHOD}
                     error={errors.winnerSelectionMethod?.message}
                     register={register("winnerSelectionMethod")}
-                  />
+                  /> */}
                 </div>
               )}
 
               <div className="grid gap-2">
-                <div className="flex w-full items-center justify-between text-[14px] font-light text-[#09032A]">
+                <div className="flex w-full items-center justify-between text-base font-light text-[#09032A]">
                   Quest Duration
                   <div className="ml-auto flex items-center gap-2">
                     <p className="text-[14px] font-[300] text-[#09032A]">
@@ -472,7 +506,7 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
                 control={control}
                 render={({ field }) => (
                   <div className="grid gap-2">
-                    <p className="text-[14px] font-light text-[#09032A]">
+                    <p className="text-base font-light text-[#09032A]">
                       Reward Mode
                     </p>
                     <RadioGroup
@@ -566,13 +600,27 @@ function GrowthQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
 
                     {!collapsedTasks[index] && (
                       <>
-                        <CustomSelect
+                        <Controller
+                          name={`tasks.${index}.type`}
+                          control={control}
+                          render={({ field }) => (
+                            <CustomSelect
+                              label="Select Task Type"
+                              options={TASK_TYPES}
+                              value={field.value}
+                              onChange={field.onChange}
+                              error={errors.tasks?.[index]?.type?.message}
+                            />
+                          )}
+                        />
+
+                        {/* <CustomSelect
                           label="Select Task Type"
                           placeholder="Select"
                           options={TASK_TYPES}
                           error={errors.tasks?.[index]?.type?.message}
                           register={register(`tasks.${index}.type`)}
-                        />
+                        /> */}
 
                         {rewardType === "Token" &&
                           rewardMode === "Individual Task Reward" && (

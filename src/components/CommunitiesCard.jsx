@@ -3,11 +3,12 @@ import { COMMUNITY_TAG_BG } from "@/lib/constants";
 import { getCommunity, joinCommunity, leaveCommunity } from "@/services";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ImSpinner5 } from "react-icons/im";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 import { toast } from "react-toastify";
 
 function CommunitiesCard({ community }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { user, isAuthenticated } = useAuth();
 
@@ -71,7 +72,7 @@ function CommunitiesCard({ community }) {
   const handleJoinCommunity = (e) => {
     e.stopPropagation();
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
     joinCommunityMutation(community.id);

@@ -12,8 +12,9 @@ import { PiPlugsConnectedFill } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
   getItemFromLocalStorage,
-  removeItemFromLocalStorage,
-  setItemInLocalStorage,
+  getItemFromSessionStorage,
+  removeItemFromSessionStorage,
+  setItemInSessionStorage,
 } from "@/lib/utils";
 import { FaEnvelope } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
@@ -45,10 +46,10 @@ const ACCOUNTS_TO_LINK = [
 ];
 
 function AccountConfiguration() {
-  const { login, token, email, otp, username, setUser, user } = useAuth();
+  const { login, token, email, otp, username, user } = useAuth();
   const navigate = useNavigate();
   const [uploading, setUploading] = useState(false);
-
+  const [imageUrl, setImageUrl] = useState(null);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -79,20 +80,17 @@ function AccountConfiguration() {
       const response = await uploadProfilePicture(file);
 
       if (response?.data?.content?.profileImageUrl) {
-        setUser((prevUser) => {
-          const updatedUser = {
-            ...prevUser,
-            profileImageUrl: response.data.content.profileImageUrl,
-          };
-          setItemInLocalStorage("user", updatedUser);
-          return updatedUser;
+        const user = getItemFromSessionStorage("user");
+        setItemInSessionStorage("user", {
+          ...user,
+          profileImageUrl: response.data.content.profileImageUrl,
         });
+        setImageUrl(response.data.content.profileImageUrl);
+        toast.success("Profile picture updated");
       } else {
         toast.error("Failed to upload profile picture");
         return;
       }
-
-      toast.success("Profile picture updated");
     } catch (error) {
       console.error(error);
       toast.error(
@@ -107,20 +105,25 @@ function AccountConfiguration() {
     e.preventDefault();
     if (!bio) {
       navigate("/");
+      login({
+        token: token,
+        email: email,
+        user: getItemFromSessionStorage("user"),
+        otp: otp,
+        username: username,
+      });
+
+      removeItemFromSessionStorage("user");
     } else {
       setSaving(true);
       try {
         const res = await updateBio(bio);
 
         if (res?.data?.content?.bio) {
-          setUser((prevUser) => {
-            const updatedUser = {
-              ...prevUser,
-              bio: res.data.content.bio,
-            };
-            setItemInLocalStorage("user", updatedUser);
-
-            return updatedUser;
+          const user = getItemFromSessionStorage("user");
+          setItemInSessionStorage("user", {
+            ...user,
+            bio: res.data.content.bio,
           });
           toast.success("Bio updated successfully");
         } else {
@@ -137,9 +140,16 @@ function AccountConfiguration() {
       }
 
       navigate("/");
-    }
+      login({
+        token: token,
+        email: email,
+        user: getItemFromSessionStorage("user"),
+        otp: otp,
+        username: username,
+      });
 
-    // Save user details logic here
+      removeItemFromSessionStorage("user");
+    }
   };
 
   return (
@@ -157,12 +167,12 @@ function AccountConfiguration() {
             login({
               token: token,
               email: email,
-              user: getItemFromLocalStorage("user"),
+              user: getItemFromSessionStorage("user"),
               otp: otp,
               username: username,
             });
 
-            removeItemFromLocalStorage("users");
+            removeItemFromSessionStorage("user");
           }}
           className="absolute top-5 right-10 text-base font-medium text-[#2F0FD1] sm:top-10"
         >
@@ -179,6 +189,12 @@ function AccountConfiguration() {
             {user?.profileImageUrl ? (
               <img
                 src={user.profileImageUrl}
+                alt="Selected avatar"
+                className="h-[50px] w-[50px] rounded-full"
+              />
+            ) : imageUrl ? (
+              <img
+                src={imageUrl}
                 alt="Selected avatar"
                 className="h-[50px] w-[50px] rounded-full"
               />
@@ -240,9 +256,7 @@ function AccountConfiguration() {
           <Button
             className="ml-auto w-full sm:w-fit"
             disabled={
-              uploading ||
-              (!user?.profileImageUrl && bio.trim().length === 0) ||
-              saving
+              uploading || (!imageUrl && bio.trim().length === 0) || saving
             }
             variant="secondary"
             size="lg"

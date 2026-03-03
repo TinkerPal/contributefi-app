@@ -1,7 +1,7 @@
 import CustomInput from "@/components/CustomInput";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
-import { setItemInLocalStorage } from "@/lib/utils";
+import { setItemInSessionStorage } from "@/lib/utils";
 import { UsernameSchema } from "@/schemas";
 import { checkUsernameAvailability, createUsername } from "@/services";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -48,11 +48,11 @@ function Username() {
       mutationFn: (data) => createUsername(data),
       onSuccess: async (data, variable) => {
         if (data.status === 200) {
-          setItemInLocalStorage("user", data.data.content);
+          setItemInSessionStorage("user", data.data.content);
           login({
             token: token,
             email: email,
-            user: data.data.content,
+            user: null,
             otp: otp,
             username: variable.username,
           });
@@ -82,7 +82,6 @@ function Username() {
   });
 
   const handleUsernameChange = (e) => {
-    // e.target.value = e.target.value.replace(/[^a-zA-Z0-9_]/g, "");
     setUsernameInput(e.target.value);
   };
 

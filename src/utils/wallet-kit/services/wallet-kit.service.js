@@ -112,8 +112,6 @@ export default class WalletKitServiceClass {
       setUserKey(address);
       console.log("the login wallet kit", address, network, id);
 
-      console.log(id === FREIGHTER_ID);
-
       if (id === FREIGHTER_ID) {
         this.startFreighterWatching(address, setUserKey, setNetwork);
       }

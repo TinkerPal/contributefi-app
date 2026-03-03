@@ -37,6 +37,7 @@ import { BsFillInfoCircleFill } from "react-icons/bs";
 import FileUpload from "../FileUpload";
 import { useCreateTechnicalQuest } from "@/hooks/useCreateQuest";
 import TokenSelectorModal from "./TokenSelectorModal";
+import { useRequireAuth } from "@/hooks/useRequireAuth";
 
 const QUEST_GOAL = ["Project-based", "Recruit Candidates"];
 const QUEST_VISIBILITY = ["Open Quest", "Closed Quest"];
@@ -46,6 +47,7 @@ const QUEST_TYPES = [
 ];
 
 function TechnicalQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
+  const { requireAuth } = useRequireAuth();
   const isDesktop = useIsDesktop();
   const [open, setOpen] = useState(false);
   const side = isDesktop ? "right" : "bottom";
@@ -165,6 +167,8 @@ function TechnicalQuest({ setSheetIsOpen, setOpenQuestSuccess, communityId }) {
   const { mutateAsync: createQuest } = useCreateTechnicalQuest();
 
   const handlePublishQuest = async () => {
+    if (!requireAuth()) return;
+
     try {
       const payload = JSON.parse(
         JSON.stringify(mapFormToCreateTechnicalQuestPayload(step1Data)),

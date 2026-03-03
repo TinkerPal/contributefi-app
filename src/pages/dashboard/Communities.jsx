@@ -18,9 +18,10 @@ import {
   useGetCommunities,
   useGetMemberCommunities,
 } from "@/hooks/useGetCommunities";
-import { useNavigate } from "react-router";
+import { useNavigate, useLocation } from "react-router";
 
 function Communities() {
+  const location = useLocation();
   const [sortOrder, setSortOrder] = useState("DESC");
   const [currentPage, setCurrentPage] = useState(1);
   const [communityView, setCommunityView] = useState("all");
@@ -62,7 +63,7 @@ function Communities() {
 
   const handleChangeCommunityView = (view) => {
     if (!isAuthenticated && (view === "created" || view === "joined")) {
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
     setCommunityView(view);

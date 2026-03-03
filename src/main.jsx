@@ -18,9 +18,13 @@ import { ToastContainer } from "react-toastify";
 import ReactQueryProviders from "./components/providers";
 import { AuthProvider } from "./contexts/AuthContext";
 import { WalletContextProvider } from "./contexts/WalletContext";
-import Wagmi from "./components/Wagmi";
 import CommunityDetailsPage from "./pages/dashboard/CommunityDetailsPage";
 import TaskDetailsPage from "./pages/dashboard/TaskDetailsPage";
+import { WagmiContextProvider } from "./contexts/WagmiContext";
+import { WagmiProvider } from "wagmi";
+// import { config } from "./lib/wagmiConfig";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import GoogleCallback from "./components/GoogleCallback";
 
 const router = createBrowserRouter([
   {
@@ -59,6 +63,11 @@ const router = createBrowserRouter([
     path: "login",
     Component: GetStartedLayout,
     children: [{ index: true, Component: Login }],
+  },
+  {
+    path: "google",
+    Component: GetStartedLayout,
+    children: [{ index: true, Component: GoogleCallback }],
   },
   {
     path: "*",

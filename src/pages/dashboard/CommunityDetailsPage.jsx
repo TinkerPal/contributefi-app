@@ -16,7 +16,7 @@ import {
   joinCommunity,
   leaveCommunity,
 } from "@/services";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useLocation, useParams } from "react-router";
 import { toast } from "react-toastify";
 import { useAuth } from "@/hooks/useAuth";
 import Loader from "@/components/Loader";
@@ -35,6 +35,7 @@ function CommunityDetailsPage() {
   const [openQuestSuccess, setOpenQuestSuccess] = useState(false);
 
   const navigate = useNavigate();
+  const location = useLocation();
   const queryClient = useQueryClient();
   const { communityAlias: communityId } = useParams();
   const { user, isAuthenticated } = useAuth();
@@ -121,7 +122,7 @@ function CommunityDetailsPage() {
 
   const handleJoinCommunity = () => {
     if (!isAuthenticated) {
-      navigate("/login");
+      navigate("/login", { state: { from: location } });
       return;
     }
     joinCommunityMutation(communityId);
