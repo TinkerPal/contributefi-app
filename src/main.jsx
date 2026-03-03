@@ -68,15 +68,15 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <Wagmi>
-      <ReactQueryProviders>
-        <AuthProvider>
-          <WalletContextProvider>
-            <RouterProvider router={router} />
-            <ToastContainer />
-          </WalletContextProvider>
-        </AuthProvider>
-      </ReactQueryProviders>
-    </Wagmi>
+    {/* <Wagmi> */}
+    <ReactQueryProviders>
+      <AuthProvider>
+        <WalletContextProvider>
+          <RouterProvider router={router} />
+          <ToastContainer />
+        </WalletContextProvider>
+      </AuthProvider>
+    </ReactQueryProviders>
+    {/* </Wagmi> */}
   </StrictMode>,
 );

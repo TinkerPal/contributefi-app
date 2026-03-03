@@ -34,8 +34,7 @@ function Login() {
   } = useForm({
     resolver: zodResolver(LoginSchema),
   });
-  const { handleConnectStellarKit, selectedSourceChain } =
-    useContext(WalletContext);
+  const { handleConnectStellarKit } = useContext(WalletContext);
   // const { resendOTPMutation, resendOTPPending } = useSendOtp();
 
   const { mutate: loginMutation, isPending: loginPending } = useMutation({
