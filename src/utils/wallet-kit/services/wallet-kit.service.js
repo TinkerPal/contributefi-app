@@ -26,7 +26,6 @@ export default class WalletKitServiceClass {
 
   constructor() {
     this.walletKit = new StellarWalletsKit({
-      // network: getNetworkPassphrase(),
       network: Networks.PUBLIC,
       modules: [
         new FreighterModule(),
@@ -41,7 +40,6 @@ export default class WalletKitServiceClass {
   }
 
   async startFreighterWatching(publicKey, setUserKey, setNetwork) {
-    console.log("starting freighter watching", publicKey);
     if (!this.watcher) {
       this.watcher = new WatchWalletChanges(1000);
     }
@@ -52,11 +50,9 @@ export default class WalletKitServiceClass {
 
       const network = await this.walletKit.getNetwork();
 
-      console.log("the network in watching is", network);
-
       setNetwork(network);
       setUserKey(address);
-      console.log("the new address", publicKey, address);
+
       this.event.trigger({
         type: WalletKitEvents.accountChanged,
         publicKey: address,
@@ -69,13 +65,7 @@ export default class WalletKitServiceClass {
     this.watcher = null;
   }
 
-  async login(id, selectedSourceChain, setUserKey, setNetwork) {
-    console.log("the selected source chain and id are", {
-      selectedSourceChain,
-      id,
-      setUserKey,
-      setNetwork,
-    });
+  async login(id, selectedSourceChain, setUserKey, setNetwork, onComplete) {
     try {
       this.walletKit.setWallet(id);
 
@@ -97,10 +87,13 @@ export default class WalletKitServiceClass {
 
       setNetwork(network);
       setUserKey(address);
-      console.log("the login wallet kit", address, network, id);
 
       if (id === FREIGHTER_ID) {
         this.startFreighterWatching(address, setUserKey, setNetwork);
+      }
+
+      if (onComplete) {
+        onComplete(address, network);
       }
 
       this.event.trigger({
@@ -128,5 +121,14 @@ export default class WalletKitServiceClass {
     });
 
     return signedTxXdr;
+  }
+
+  logout() {
+    if (this.watcher) {
+      this.watcher = null;
+    }
+    this.event.trigger({
+      type: WalletKitEvents.logout,
+    });
   }
 }

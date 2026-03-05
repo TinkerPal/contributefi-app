@@ -102,12 +102,6 @@ export default function WalletKitModal() {
   });
 
   useEffect(() => {
-    if (userKey && network) {
-      walletChallengeMutation({ publicKey: userKey, network });
-    }
-  }, [userKey, network, walletChallengeMutation]);
-
-  useEffect(() => {
     Promise.all(
       stellarWalletKitOptions.map(({ isAvailable }) => isAvailable()),
     ).then((results) => {
@@ -183,6 +177,9 @@ export default function WalletKitModal() {
                         selectedSourceChain,
                         setUserKey,
                         setNetwork,
+                        (publicKey, network) => {
+                          walletChallengeMutation({ publicKey, network });
+                        },
                       )
                     : handleDownload(option?.productUrl);
                   setWalletKitIsOpen(false);
