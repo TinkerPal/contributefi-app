@@ -91,6 +91,7 @@ const router = createBrowserRouter([
     Component: AuthLayout,
     children: [
       { index: true, Component: GoogleCallback },
+
       {
         path: "*",
         element: (

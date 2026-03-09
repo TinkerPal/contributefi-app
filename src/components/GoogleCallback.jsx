@@ -1,83 +1,81 @@
 import { useAuth } from "@/hooks/useAuth";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getUser } from "@/services";
 import { PiWarningCircle } from "react-icons/pi";
-import { useDispatch } from "react-redux";
-import { setToken } from "@/store/authSlice";
 
 function GoogleCallback() {
-  const { login } = useAuth();
-  const dispatch = useDispatch();
+  const { login, token } = useAuth();
   const navigate = useNavigate();
-  const [token, setTokenState] = useState(null);
-  const processedRef = useRef(false);
+  const hasHandled = useRef(false);
+  const navigateRef = useRef(navigate);
+  const loginRef = useRef(login);
+
+  // Keep refs in sync without triggering effects
+  useEffect(() => {
+    navigateRef.current = navigate;
+    loginRef.current = login;
+  });
 
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tokenFromUrl = urlParams.get("token");
 
     if (tokenFromUrl) {
-      dispatch(setToken(tokenFromUrl));
-      setTokenState(tokenFromUrl);
+      loginRef.current({
+        token: tokenFromUrl,
+        email: null,
+        user: null,
+        otp: null,
+        username: null,
+      });
     } else {
-      // toast.error("Authentication token not found");
-      navigate("/login", { replace: true });
+      toast.error("Authentication failed");
+      navigateRef.current("/login", { replace: true });
     }
-  }, [navigate, dispatch]);
+  }, []);
 
-  const { data, isSuccess, isLoading, isError } = useQuery({
+  const { data, isSuccess, isError } = useQuery({
     queryKey: ["getUser"],
-    queryFn: () => getUser(),
+    queryFn: getUser,
     enabled: !!token,
+    retry: false,
   });
 
   useEffect(() => {
-    if (isSuccess && data && !processedRef.current) {
-      processedRef.current = true;
-      const user = data.data.content;
+    if (!isSuccess || hasHandled.current) return;
+    hasHandled.current = true;
 
-      if (!user.username) {
-        login({
-          token: token,
-          email: user.email,
-          user: null,
-          otp: "123456",
-          username: user.username,
-        });
-        navigate("/get-started/username", { replace: true });
-      } else if (!user.bio && !user.lastLogin) {
-        login({
-          token: token,
-          email: user.email,
-          user: null,
-          otp: "123456",
-          username: user.username,
-        });
-        navigate("/get-started/account-configuration", { replace: true });
-      } else {
-        login({
-          token: token,
-          email: null,
-          user: user,
-          otp: null,
-          username: null,
-        });
-        toast.success("Login successful");
-        navigate("/", { replace: true });
-      }
+    const user = data.data.content;
+
+    if (!user.username) {
+      loginRef.current({
+        token,
+        email: null,
+        user: null,
+        otp: "123456",
+        username: null,
+      });
+      navigateRef.current("/get-started/username", { replace: true });
+    } else if (!user.bio && !user.lastLogin) {
+      loginRef.current({
+        token,
+        email: null,
+        user: null,
+        otp: null,
+        username: user.username,
+      });
+      navigateRef.current("/get-started/account-configuration", {
+        replace: true,
+      });
+    } else {
+      loginRef.current({ token, email: null, user, otp: null, username: null });
+      toast.success("Login successful");
+      navigateRef.current("/", { replace: true });
     }
-  }, [isSuccess, data, login, navigate, token]);
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-300 border-t-[#1082E4]" />
-      </div>
-    );
-  }
+  }, [isSuccess, data, token]);
 
   if (isError) {
     return (
@@ -87,7 +85,7 @@ function GoogleCallback() {
           Authentication failed
         </p>
         <p className="mt-1 text-xs text-[#1082E4]">
-          {"An unexpected error occurred."}
+          An unexpected error occurred.
         </p>
       </div>
     );
