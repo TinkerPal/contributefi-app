@@ -68,8 +68,18 @@ export function checkUsernameAvailability(username) {
   );
 }
 
+export function createWallet(network) {
+  return api.post(`${import.meta.env.VITE_BASE_URL}/auth/create-wallet`, {
+    network,
+  });
+}
+
 export function getUser() {
   return api.get(`${import.meta.env.VITE_BASE_URL}/users/user`);
+}
+
+export function linkGithub() {
+  return api.get(`${import.meta.env.VITE_BASE_URL}/auth/github`, {});
 }
 
 export function loginWithEmail(data) {

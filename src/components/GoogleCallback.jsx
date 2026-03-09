@@ -5,9 +5,12 @@ import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getUser } from "@/services";
 import { PiWarningCircle } from "react-icons/pi";
+import { useDispatch } from "react-redux";
+import { setAuthMethod } from "@/store/authSlice";
 
 function GoogleCallback() {
   const { login, token } = useAuth();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const hasHandled = useRef(false);
   const navigateRef = useRef(navigate);
@@ -30,6 +33,7 @@ function GoogleCallback() {
         user: null,
         otp: null,
         username: null,
+        authMethod: "GOOGLE",
       });
     } else {
       toast.error("Authentication failed");
@@ -53,7 +57,7 @@ function GoogleCallback() {
     if (!user.username) {
       loginRef.current({
         token,
-        email: null,
+        email: user.email,
         user: null,
         otp: "123456",
         username: null,
@@ -62,7 +66,7 @@ function GoogleCallback() {
     } else if (!user.bio && !user.lastLogin) {
       loginRef.current({
         token,
-        email: null,
+        email: user.email,
         user: null,
         otp: null,
         username: user.username,
@@ -71,7 +75,13 @@ function GoogleCallback() {
         replace: true,
       });
     } else {
-      loginRef.current({ token, email: null, user, otp: null, username: null });
+      loginRef.current({
+        token,
+        email: user.email,
+        user,
+        otp: null,
+        username: null,
+      });
       toast.success("Login successful");
       navigateRef.current("/", { replace: true });
     }

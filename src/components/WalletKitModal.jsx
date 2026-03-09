@@ -68,6 +68,7 @@ export default function WalletKitModal() {
             user: null,
             otp: "123456",
             username: null,
+            authMethod: "WALLET",
           });
           navigate("/get-started/username");
         } else if (!content.bio && !content.lastLogin) {
@@ -77,6 +78,7 @@ export default function WalletKitModal() {
             user: null,
             otp: null,
             username: content.username,
+            authMethod: "WALLET",
           });
           navigate("/get-started/account-configuration");
         } else {
@@ -86,6 +88,7 @@ export default function WalletKitModal() {
             user: content,
             otp: null,
             username: null,
+            authMethod: "WALLET",
           });
           navigate("/", { replace: true });
           toast.success("Login successful");

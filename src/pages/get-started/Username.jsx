@@ -36,8 +36,6 @@ function Username() {
     }
   }, [navigate, otp, username]);
 
-  console.log({ otp, username, email });
-
   useEffect(() => {
     if (username && !email) {
       navigate("/get-started/bind-email");
@@ -45,6 +43,8 @@ function Username() {
       navigate("/get-started/create-wallet");
     }
   }, [navigate, username, email, otp]);
+
+  console.log({ otp, username, email });
 
   const {
     register,

@@ -49,6 +49,7 @@ function CreateAccount() {
               user: null,
               otp: null,
               username: null,
+              authMethod: "EMAIL",
             });
             navigate("/get-started/verify-email");
           } else if (!content.username) {
@@ -58,6 +59,7 @@ function CreateAccount() {
               user: null,
               otp: "123456",
               username: null,
+              authMethod: "EMAIL",
             });
             navigate("/get-started/username");
           } else {
@@ -67,6 +69,7 @@ function CreateAccount() {
               user: content,
               otp: null,
               username: null,
+              authMethod: "EMAIL",
             });
             navigate("/");
             toast.success("Login successful");

@@ -2,13 +2,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import React, { useEffect, useState } from "react";
-import { FaPlus, FaUserLarge } from "react-icons/fa6";
-import { Link, useNavigate } from "react-router";
+import { FaPlus, FaUserLarge, FaCheck } from "react-icons/fa6";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { PiGithubLogoFill } from "react-icons/pi";
 import { FaDiscord } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
 import { FaTelegram } from "react-icons/fa";
-import { PiPlugsConnectedFill } from "react-icons/pi";
 import { Button } from "@/components/ui/button";
 import {
   getItemFromLocalStorage,
@@ -16,7 +15,6 @@ import {
   removeItemFromSessionStorage,
   setItemInSessionStorage,
 } from "@/lib/utils";
-import { FaEnvelope } from "react-icons/fa";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
 import { updateBio, uploadProfilePicture } from "@/services";
@@ -44,18 +42,50 @@ const ACCOUNTS_TO_LINK = [
 function AccountConfiguration() {
   const { login, token, username } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [uploading, setUploading] = useState(false);
   const [imageUrl, setImageUrl] = useState(
     () => getItemFromSessionStorage("imageUrl") || null,
   );
   const [saving, setSaving] = useState(false);
   const [user] = useState(() => getItemFromSessionStorage("user"));
+  const [linkingAccount, setLinkingAccount] = useState(null);
+  const [linkedAccount, setLinkedAccount] = useState(null);
 
   useEffect(() => {
     if (!username) {
       navigate("/get-started/username");
     }
   }, [navigate, username]);
+
+  useEffect(() => {
+    const linked = searchParams.get("linked");
+    if (linked === "github") {
+      setLinkedAccount("github");
+      toast.success("GitHub account linked successfully");
+      navigate("/get-started/account-configuration", { replace: true });
+    } else if (linked === "discord") {
+      setLinkedAccount("discord");
+      toast.success("Discord account linked successfully");
+      navigate("/get-started/account-configuration", { replace: true });
+    }
+
+    const error = searchParams.get("error");
+    if (error) {
+      toast.error(`Failed to link account: ${error}`);
+      navigate("/get-started/account-configuration", { replace: true });
+    }
+  }, [searchParams, navigate]);
+
+  const handleLinkAccount = async (accountType) => {
+    if (accountType === "github") {
+      setLinkingAccount("github");
+      window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/github`;
+    } else if (accountType === "discord") {
+      setLinkingAccount("discord");
+      window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/discord`;
+    }
+  };
 
   const [bio, setBio] = useState("");
 
@@ -224,29 +254,36 @@ function AccountConfiguration() {
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {ACCOUNTS_TO_LINK.map((account) => (
-            <div
-              key={account.title}
-              className="flex items-center justify-between rounded-[12px] bg-[#F7F9FD] px-4 py-3"
-            >
-              <div className="flex items-center gap-2">
-                {account.title === "Wallet" ? (
-                  getItemFromLocalStorage("email") ? (
-                    account.icon
-                  ) : (
-                    <FaEnvelope className="text-[27px] text-[#2F0FD1]" />
-                  )
-                ) : (
-                  account.icon
-                )}
-                <span className="text-base font-normal text-[#09032A]">
-                  {account.title}
-                </span>
-              </div>
+          {ACCOUNTS_TO_LINK.map((account) => {
+            const accountKey = account.title.toLowerCase().replace(" ", "");
+            const isLinked = linkedAccount === accountKey;
+            const isLinking = linkingAccount === accountKey;
 
-              <FaPlus className="text-[#5865F2]" />
-            </div>
-          ))}
+            return (
+              <button
+                key={account.title}
+                type="button"
+                disabled={isLinking || isLinked}
+                onClick={() => handleLinkAccount(accountKey)}
+                className="flex items-center justify-between rounded-[12px] bg-[#F7F9FD] px-4 py-3 disabled:opacity-50"
+              >
+                <div className="flex items-center gap-2">
+                  {account.icon}
+                  <span className="text-base font-normal text-[#09032A]">
+                    {account.title}
+                  </span>
+                </div>
+
+                {isLinking ? (
+                  <ImSpinner5 className="animate-spin text-[#5865F2]" />
+                ) : isLinked ? (
+                  <FaCheck className="text-green-500" />
+                ) : (
+                  <FaPlus className="text-[#5865F2]" />
+                )}
+              </button>
+            );
+          })}
 
           <div />
 

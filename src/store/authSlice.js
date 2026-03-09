@@ -6,6 +6,7 @@ const initialState = {
   email: null,
   otp: null,
   username: null,
+  authMethod: null,
 };
 
 const authSlice = createSlice({
@@ -27,13 +28,17 @@ const authSlice = createSlice({
     setUsername: (state, action) => {
       state.username = action.payload;
     },
+    setAuthMethod: (state, action) => {
+      state.authMethod = action.payload;
+    },
     login: (state, action) => {
-      const { token, email, user, otp, username } = action.payload;
+      const { token, email, user, otp, username, authMethod } = action.payload;
       state.token = token || null;
       state.user = user || null;
       state.email = email || null;
       state.otp = otp || null;
       state.username = username || null;
+      state.authMethod = authMethod || null;
     },
     logout: (state) => {
       state.user = null;
@@ -41,6 +46,7 @@ const authSlice = createSlice({
       state.email = null;
       state.otp = null;
       state.username = null;
+      state.authMethod = null;
     },
   },
 });
@@ -51,6 +57,7 @@ export const {
   setEmail,
   setOtp,
   setUsername,
+  setAuthMethod,
   login,
   logout,
 } = authSlice.actions;
