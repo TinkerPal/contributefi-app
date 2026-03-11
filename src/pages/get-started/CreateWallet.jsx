@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useWallet } from "@/hooks/useWallet";
 
 function CreateWallet() {
-  const { login, token, email, otp, username } = useAuth();
+  const { username } = useAuth();
   const navigate = useNavigate();
   const { setPublicKey, setNetwork } = useWallet();
   const network = "TESTNET";
@@ -51,16 +51,6 @@ function CreateWallet() {
     createWalletMutation();
   };
 
-  const handleSkip = () => {
-    login({
-      token: token,
-      email: email,
-      user: null,
-      otp: otp,
-      username: username,
-    });
-  };
-
   return (
     <div>
       <div className="mb-8 space-y-[8px]">
@@ -70,14 +60,6 @@ function CreateWallet() {
         <p className="text-base font-light text-[#525866] md:text-[18px]">
           Create a Stellar wallet to receive payments
         </p>
-
-        <Link
-          to="/get-started/account-configuration"
-          onClick={handleSkip}
-          className="absolute top-5 right-10 text-base font-medium text-[#2F0FD1] sm:top-10"
-        >
-          Skip till Later &gt;&gt;
-        </Link>
       </div>
 
       <div className="space-y-[32px]">

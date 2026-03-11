@@ -74,6 +74,10 @@ export function createWallet(network) {
   });
 }
 
+export function linkedAccount() {
+  return api.get(`${import.meta.env.VITE_BASE_URL}/users/configured-accounts`);
+}
+
 export function getUser() {
   return api.get(`${import.meta.env.VITE_BASE_URL}/users/user`);
 }

@@ -5,12 +5,9 @@ import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getUser } from "@/services";
 import { PiWarningCircle } from "react-icons/pi";
-import { useDispatch } from "react-redux";
-import { setAuthMethod } from "@/store/authSlice";
 
 function GoogleCallback() {
   const { login, token } = useAuth();
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const hasHandled = useRef(false);
   const navigateRef = useRef(navigate);
@@ -77,7 +74,7 @@ function GoogleCallback() {
     } else {
       loginRef.current({
         token,
-        email: user.email,
+        email: null,
         user,
         otp: null,
         username: null,

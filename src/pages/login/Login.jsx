@@ -23,6 +23,7 @@ function Login() {
   const { handleOpenStellarWalletKitModal } = useWallet();
   const navigate = useNavigate();
   const [revealPassword, setRevealPassword] = useState(false);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
   const handleClickIcon = () => {
     setRevealPassword((revealPassword) => !revealPassword);
@@ -91,6 +92,7 @@ function Login() {
   };
 
   const handleGoogleLogin = () => {
+    setIsGoogleLoading(true);
     window.location.href = import.meta.env.VITE_GOOGLE_AUTH_URL;
   };
 
@@ -106,7 +108,14 @@ function Login() {
         </h2>
         <p className="text-base font-light text-[#525866] md:text-[18px]">
           Sign in to access your account or{" "}
-          <Link className="text-[#2F0FD1] hover:underline" to="/get-started">
+          <Link
+            className="text-[#2F0FD1] hover:underline"
+            to={
+              isGoogleLoading || loginWithEmailPending
+                ? "/login"
+                : "/get-started"
+            }
+          >
             Create Account
           </Link>
         </p>
@@ -115,7 +124,7 @@ function Login() {
       <div className="space-y-[32px]">
         <div className="space-y-[16px]">
           <Button
-            disabled={loginWithEmailPending}
+            disabled={loginWithEmailPending || isGoogleLoading}
             className="group w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"
@@ -131,7 +140,9 @@ function Login() {
 
           <Button
             disabled={
-              loginWithEmailPending || !import.meta.env.VITE_GOOGLE_AUTH_URL
+              loginWithEmailPending ||
+              !import.meta.env.VITE_GOOGLE_AUTH_URL ||
+              isGoogleLoading
             }
             onClick={handleGoogleLogin}
             className="w-full border-none bg-[#F7F9FD] text-[#09032A]"
@@ -139,7 +150,13 @@ function Login() {
             size="lg"
           >
             <FcGoogle style={{ width: "24px", height: "24px" }} />
-            Sign in with Google
+            {isGoogleLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="h-5 w-5 animate-spin rounded-full border-4 border-gray-300 border-t-[#1082E4]" />
+              </div>
+            ) : (
+              "Sign in with Google"
+            )}
           </Button>
         </div>
 
@@ -156,7 +173,7 @@ function Login() {
             type="text"
             error={errors.email?.message}
             {...register("email")}
-            disabled={loginWithEmailPending}
+            disabled={loginWithEmailPending || isGoogleLoading}
           />
 
           <CustomInput
@@ -169,7 +186,7 @@ function Login() {
             handleClickIcon={handleClickIcon}
             error={errors.password?.message}
             {...register("password")}
-            disabled={loginWithEmailPending}
+            disabled={loginWithEmailPending || isGoogleLoading}
           />
 
           <div className="flex flex-col gap-2">
@@ -178,7 +195,7 @@ function Login() {
               variant="secondary"
               size="lg"
               type="submit"
-              disabled={loginWithEmailPending}
+              disabled={loginWithEmailPending || isGoogleLoading}
             >
               {loginWithEmailPending ? "Processing" : "Log In"}
             </Button>
