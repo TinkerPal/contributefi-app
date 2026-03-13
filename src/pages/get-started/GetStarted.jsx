@@ -1,26 +1,27 @@
 import CustomInput from "@/components/CustomInput";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { IoMdEyeOff } from "react-icons/io";
 import { IoEye } from "react-icons/io5";
 import { FcGoogle } from "react-icons/fc";
-import { Link, useNavigate } from "react-router";
-import { LoginWithEmailSchema } from "@/schemas";
+import { useNavigate } from "react-router";
+import { ConnectWithEmailSchema } from "@/schemas";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "react-toastify";
-import { loginWithEmail } from "@/services";
+import { connectWithEmail } from "@/services";
 import { useAuth } from "@/hooks/useAuth";
 import { useWallet } from "@/hooks/useWallet";
+import { ArrowRight } from "lucide-react";
 
-function Login() {
-  // const location = useLocation();
-  // const searchParams = new URLSearchParams(location.search);
-  // const redirectParam = searchParams.get("redirect");
-  // const from = location.state?.from?.pathname || redirectParam || "/";
+function GetStarted() {
   const { login } = useAuth();
-  const { handleOpenStellarWalletKitModal } = useWallet();
+  const {
+    handleOpenStellarWalletKitModal,
+    isLoading: isWalletLoading,
+    setWalletLoading,
+  } = useWallet();
   const navigate = useNavigate();
   const [revealPassword, setRevealPassword] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
@@ -35,60 +36,62 @@ function Login() {
     formState: { errors },
     reset,
   } = useForm({
-    resolver: zodResolver(LoginWithEmailSchema),
+    resolver: zodResolver(ConnectWithEmailSchema),
   });
 
-  const { mutate: loginWithEmailMutation, isPending: loginWithEmailPending } =
-    useMutation({
-      mutationFn: (data) => loginWithEmail(data),
-      onSuccess: async (data) => {
-        if (data.status === 200) {
-          const content = data.data.content;
-          const token = content.accessToken?.token;
-          const email = content.email;
+  const {
+    mutate: connectWithEmailMutation,
+    isPending: connectWithEmailPending,
+  } = useMutation({
+    mutationFn: (data) => connectWithEmail(data),
+    onSuccess: async (data) => {
+      if (data.status === 200) {
+        const content = data.data.content;
+        const token = content.accessToken?.token;
+        const email = content.email;
 
-          if (!content.isVerified) {
-            login({
-              token,
-              email,
-              user: null,
-              otp: null,
-              username: null,
-            });
-            navigate("/get-started/verify-email");
-          } else if (!content.username) {
-            login({
-              token,
-              email,
-              user: null,
-              otp: "123456",
-              username: null,
-            });
-            navigate("/get-started/username");
-          } else {
-            login({
-              token,
-              email: null,
-              user: content,
-              otp: null,
-              username: null,
-            });
-            navigate("/", { replace: true });
-            toast.success("Login successful");
-            reset();
-          }
+        if (!content.isVerified) {
+          login({
+            token,
+            email,
+            user: null,
+            otp: null,
+            username: null,
+          });
+          navigate("/get-started/verify-email");
+        } else if (!content.username) {
+          login({
+            token,
+            email,
+            user: null,
+            otp: "123456",
+            username: null,
+          });
+          navigate("/get-started/username");
         } else {
-          toast.error("Something went wrong");
+          login({
+            token,
+            email: null,
+            user: content,
+            otp: null,
+            username: null,
+          });
+          navigate("/", { replace: true });
+          toast.success("Login successful");
+          reset();
         }
-      },
-      onError: (error) => {
-        console.error("Error:", error.response.data.message);
-        toast.error(error.response.data.message);
-      },
-    });
+      } else {
+        toast.error("Something went wrong");
+      }
+    },
+    onError: (error) => {
+      console.error("Error:", error.response.data.message);
+      toast.error(error.response.data.message);
+    },
+  });
 
   const onSubmit = (data) => {
-    loginWithEmailMutation(data);
+    connectWithEmailMutation(data);
   };
 
   const handleGoogleLogin = () => {
@@ -100,6 +103,12 @@ function Login() {
     handleOpenStellarWalletKitModal();
   };
 
+  useEffect(() => {
+    setIsGoogleLoading(false);
+    setWalletLoading(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div>
       <div className="mb-8 space-y-[8px]">
@@ -107,56 +116,55 @@ function Login() {
           Welcome Back
         </h2>
         <p className="text-base font-light text-[#525866] md:text-[18px]">
-          Sign in to access your account or{" "}
-          <Link
-            className="text-[#2F0FD1] hover:underline"
-            to={
-              isGoogleLoading || loginWithEmailPending
-                ? "/login"
-                : "/get-started"
-            }
-          >
-            Create Account
-          </Link>
+          Get started with a preferred option
         </p>
       </div>
 
       <div className="space-y-[32px]">
         <div className="space-y-[16px]">
           <Button
-            disabled={loginWithEmailPending || isGoogleLoading}
+            disabled={
+              connectWithEmailPending || isGoogleLoading || isWalletLoading
+            }
             className="group w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"
             onClick={handleWalletLogin}
           >
-            <img
-              className="h-auto w-10 rounded-full"
-              src="/cryptoIcons/12000000.svg"
-              alt=""
-            />
-            Sign in with Wallet
+            {isWalletLoading ? (
+              <div className="flex items-center justify-center">
+                <div className="h-5 w-5 animate-spin rounded-full border-4 border-gray-300 border-t-[#1082E4]" />
+              </div>
+            ) : (
+              <img
+                className="h-auto w-10 rounded-full"
+                src="/cryptoIcons/12000000.svg"
+                alt=""
+              />
+            )}
+            Connect Wallet
           </Button>
 
           <Button
             disabled={
-              loginWithEmailPending ||
+              connectWithEmailPending ||
               !import.meta.env.VITE_GOOGLE_AUTH_URL ||
-              isGoogleLoading
+              isGoogleLoading ||
+              isWalletLoading
             }
             onClick={handleGoogleLogin}
             className="w-full border-none bg-[#F7F9FD] text-[#09032A]"
             variant="outline"
             size="lg"
           >
-            <FcGoogle style={{ width: "24px", height: "24px" }} />
             {isGoogleLoading ? (
               <div className="flex items-center justify-center">
                 <div className="h-5 w-5 animate-spin rounded-full border-4 border-gray-300 border-t-[#1082E4]" />
               </div>
             ) : (
-              "Sign in with Google"
+              <FcGoogle style={{ width: "24px", height: "24px" }} />
             )}
+            Use Google
           </Button>
         </div>
 
@@ -173,7 +181,9 @@ function Login() {
             type="text"
             error={errors.email?.message}
             {...register("email")}
-            disabled={loginWithEmailPending || isGoogleLoading}
+            disabled={
+              connectWithEmailPending || isGoogleLoading || isWalletLoading
+            }
           />
 
           <CustomInput
@@ -186,7 +196,9 @@ function Login() {
             handleClickIcon={handleClickIcon}
             error={errors.password?.message}
             {...register("password")}
-            disabled={loginWithEmailPending || isGoogleLoading}
+            disabled={
+              connectWithEmailPending || isGoogleLoading || isWalletLoading
+            }
           />
 
           <div className="flex flex-col gap-2">
@@ -195,9 +207,12 @@ function Login() {
               variant="secondary"
               size="lg"
               type="submit"
-              disabled={loginWithEmailPending || isGoogleLoading}
+              disabled={
+                connectWithEmailPending || isGoogleLoading || isWalletLoading
+              }
             >
-              {loginWithEmailPending ? "Processing" : "Log In"}
+              {connectWithEmailPending ? "Processing" : "Continue"}
+              <ArrowRight />
             </Button>
           </div>
         </form>
@@ -206,4 +221,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default GetStarted;

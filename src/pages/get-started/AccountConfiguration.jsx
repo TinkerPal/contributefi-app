@@ -413,17 +413,30 @@ function AccountConfiguration() {
     enabled: !!token,
   });
 
+  console.log({ linkedAccountsData });
+
   const linkedAccounts = React.useMemo(() => {
     if (!linkedAccountsData?.data?.content) return [];
     const content = linkedAccountsData.data.content;
     if (Array.isArray(content)) {
       if (content.length > 0 && typeof content[0] === "string") {
-        return content.map((acc) => acc.toLowerCase());
+        return content.map((acc) => ({
+          provider: acc.toLowerCase(),
+          username: null,
+        }));
       }
-      return content.map((acc) => acc.provider?.toLowerCase()).filter(Boolean);
+      return content
+        .map((acc) => ({
+          provider: acc.provider?.toLowerCase(),
+          username: acc.username || null,
+        }))
+        .filter((acc) => acc.provider);
     }
     if (content.linkedAccounts && Array.isArray(content.linkedAccounts)) {
-      return content.linkedAccounts.map((acc) => acc.toLowerCase());
+      return content.linkedAccounts.map((acc) => ({
+        provider: acc.toLowerCase(),
+        username: null,
+      }));
     }
     return [];
   }, [linkedAccountsData]);
@@ -454,15 +467,6 @@ function AccountConfiguration() {
       window.location.href = `${import.meta.env.VITE_BASE_URL}/auth/telegram?userId=${userId}`;
     }
   };
-  useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://telegram.org/js/telegram-widget.js?14";
-    script.async = true;
-    document.body.appendChild(script);
-    return () => {
-      document.body.removeChild(script);
-    };
-  }, []);
   const [bio, setBio] = useState("");
   const handleImageSelect = async (e) => {
     const file = e.target.files[0];
@@ -617,7 +621,10 @@ function AccountConfiguration() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {ACCOUNTS_TO_LINK.map((account) => {
-            const isLinked = linkedAccounts.includes(account.key);
+            const linkedAccount = linkedAccounts.find(
+              (acc) => acc.provider === account.key,
+            );
+            const isLinked = !!linkedAccount;
             const isLinking = linkingAccount === account.key;
             return (
               <button
@@ -627,11 +634,18 @@ function AccountConfiguration() {
                 onClick={() => handleLinkAccount(account.key)}
                 className="flex items-center justify-between rounded-[12px] bg-[#F7F9FD] px-4 py-3 disabled:opacity-50"
               >
-                <div className="flex items-center gap-2">
-                  {account.icon}
-                  <span className="text-base font-normal text-[#09032A]">
-                    {account.title}
-                  </span>
+                <div className="flex flex-col items-start gap-1">
+                  <div className="flex items-center gap-2">
+                    {account.icon}
+                    <span className="text-base font-normal text-[#09032A]">
+                      {account.title}
+                    </span>
+                  </div>
+                  {isLinked && linkedAccount?.username && (
+                    <span className="ml-6 text-xs text-[#525866]">
+                      @{linkedAccount.username}
+                    </span>
+                  )}
                 </div>
                 {loadingAccounts ? (
                   <ImSpinner5 className="animate-spin text-[#5865F2]" />
