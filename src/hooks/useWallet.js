@@ -4,6 +4,7 @@ import {
   setNetwork,
   setStellarWalletKitIsOpen,
   clearWallet,
+  setWalletLoading,
 } from "@/store/walletSlice";
 
 export const useWallet = () => {
@@ -14,6 +15,7 @@ export const useWallet = () => {
   const stellarWalletKitIsOpen = useSelector(
     (state) => state.wallet.stellarWalletKitIsOpen,
   );
+  const isLoading = useSelector((state) => state.wallet.isLoading);
 
   const handleOpenStellarWalletKitModal = () => {
     dispatch(setStellarWalletKitIsOpen(true));
@@ -31,6 +33,8 @@ export const useWallet = () => {
     stellarWalletKitIsOpen,
     setStellarWalletKitIsOpen: (value) =>
       dispatch(setStellarWalletKitIsOpen(value)),
+    isLoading,
+    setWalletLoading: (value) => dispatch(setWalletLoading(value)),
     handleOpenStellarWalletKitModal,
     handleCloseStellarWalletKitModal,
     clearWallet: () => dispatch(clearWallet()),

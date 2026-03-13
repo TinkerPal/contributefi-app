@@ -9,7 +9,7 @@ export const SignUpSchema = z.object({
     .min(6, "Password must be at least 6 characters"),
 });
 
-export const LoginWithEmailSchema = z.object({
+export const ConnectWithEmailSchema = z.object({
   email: z.string().min(1, "Email or username is required"),
   password: z
     .string()

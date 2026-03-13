@@ -4,6 +4,7 @@ const initialState = {
   publicKey: "",
   network: "",
   stellarWalletKitIsOpen: false,
+  isLoading: false,
 };
 
 const walletSlice = createSlice({
@@ -23,6 +24,9 @@ const walletSlice = createSlice({
       state.publicKey = "";
       state.network = "";
     },
+    setWalletLoading: (state, action) => {
+      state.isLoading = action.payload;
+    },
   },
 });
 
@@ -31,6 +35,7 @@ export const {
   setNetwork,
   setStellarWalletKitIsOpen,
   clearWallet,
+  setWalletLoading,
 } = walletSlice.actions;
 
 export default walletSlice.reducer;

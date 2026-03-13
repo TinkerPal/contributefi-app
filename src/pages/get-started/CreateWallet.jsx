@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
@@ -13,43 +12,44 @@ function CreateWallet() {
   const { setPublicKey, setNetwork } = useWallet();
   const network = "TESTNET";
 
+  const { mutate: createWalletMutation } = useMutation({
+    mutationFn: () => createWallet(network),
+    onSuccess: async (data) => {
+      console.log("Create wallet response:", data);
+      if (data.status === 200) {
+        const { publicKey } = data.data.content;
+
+        setPublicKey(publicKey);
+        setNetwork({
+          network,
+          networkPassphrase: "Test SDF Network ; September 2015",
+        });
+
+        toast.success("Wallet created successfully");
+        navigate("/get-started/wallet-created-success");
+      } else {
+        toast.error("Something went wrong");
+      }
+    },
+    onError: (error) => {
+      const message =
+        error?.response?.data?.message || "Failed to create wallet";
+      console.error("Error:", message);
+      toast.error(message);
+    },
+  });
+
+  useEffect(() => {
+    if (username) {
+      createWalletMutation();
+    }
+  }, [username, createWalletMutation]);
+
   useEffect(() => {
     if (!username) {
       navigate("/get-started/username");
     }
   }, [navigate, username]);
-
-  const { mutate: createWalletMutation, isPending: creatingWallet } =
-    useMutation({
-      mutationFn: () => createWallet(network),
-      onSuccess: async (data) => {
-        console.log("Create wallet response:", data);
-        if (data.status === 200) {
-          const { publicKey } = data.data.content;
-
-          setPublicKey(publicKey);
-          setNetwork({
-            network,
-            networkPassphrase: "Test SDF Network ; September 2015",
-          });
-
-          toast.success("Wallet created successfully");
-          navigate("/get-started/account-configuration");
-        } else {
-          toast.error("Something went wrong");
-        }
-      },
-      onError: (error) => {
-        const message =
-          error?.response?.data?.message || "Failed to create wallet";
-        console.error("Error:", message);
-        toast.error(message);
-      },
-    });
-
-  const handleCreateWallet = () => {
-    createWalletMutation();
-  };
 
   return (
     <div>
@@ -58,20 +58,14 @@ function CreateWallet() {
           Create Wallet
         </h2>
         <p className="text-base font-light text-[#525866] md:text-[18px]">
-          Create a Stellar wallet to receive payments
+          Please wait while we generate a wallet for you
         </p>
       </div>
 
       <div className="space-y-[32px]">
-        <Button
-          className="w-full"
-          variant="secondary"
-          size="lg"
-          onClick={handleCreateWallet}
-          disabled={creatingWallet}
-        >
-          {creatingWallet ? "Creating Wallet..." : "Create Wallet"}
-        </Button>
+        <div className="flex items-center justify-center">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-300 border-t-[#1082E4]" />
+        </div>
       </div>
     </div>
   );

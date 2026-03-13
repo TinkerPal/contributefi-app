@@ -86,7 +86,7 @@ export function linkGithub() {
   return api.get(`${import.meta.env.VITE_BASE_URL}/auth/github`, {});
 }
 
-export function loginWithEmail(data) {
+export function connectWithEmail(data) {
   const requestPayload = {
     method: "EMAIL",
     email: data.email,

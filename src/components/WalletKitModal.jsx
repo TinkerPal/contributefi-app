@@ -20,6 +20,7 @@ export default function WalletKitModal() {
     publicKey,
     network,
     handleCloseStellarWalletKitModal,
+    setWalletLoading,
   } = useWallet();
 
   const stellarWalletKitOptions = WalletKitService.walletKit.modules;
@@ -43,12 +44,14 @@ export default function WalletKitModal() {
         } catch (error) {
           console.error("Signing error:", error);
           toast.error("Failed to sign transaction");
+          setWalletLoading(false);
         }
       }
     },
     onError: (error) => {
       console.error("Wallet challenge error:", error);
       toast.error("Failed to initiate wallet login");
+      setWalletLoading(false);
     },
   });
 
@@ -93,11 +96,13 @@ export default function WalletKitModal() {
           navigate("/", { replace: true });
           toast.success("Login successful");
         }
+        setWalletLoading(false);
       }
     },
     onError: (error) => {
       console.error("Wallet login failed:", error);
       toast.error(error.response?.data?.message || "Wallet login failed");
+      setWalletLoading(false);
     },
   });
 
@@ -167,6 +172,7 @@ export default function WalletKitModal() {
             {stellarWalletKitOptions?.map((option) => (
               <div
                 onClick={() => {
+                  setWalletLoading(true);
                   isAvailableMap.get(option?.productName)
                     ? WalletKitService.login(
                         option?.productId,

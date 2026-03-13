@@ -76,7 +76,7 @@ function DashboardNavigation({
         </Link>
       ) : (
         <Link
-          to="/login"
+          to="/get-started"
           className="block rounded-[8px] px-6 py-3 font-medium text-[#8791A7] hover:bg-[#F0F4FD] hover:text-[#2F0FD1]"
         >
           <GoSignOut className="mr-4 inline-block text-2xl" />

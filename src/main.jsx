@@ -9,10 +9,8 @@ import Communities from "./pages/dashboard/Communities";
 import Tasks from "./pages/dashboard/Tasks";
 import NotFound from "./components/NotFound";
 import AuthLayout from "./components/auth/AuthLayout";
-import CreateAccount from "./pages/get-started/CreateAccount";
 import VerifyEmail from "./pages/get-started/VerifyEmail";
 import Username from "./pages/get-started/Username";
-import Login from "./pages/login/Login";
 import AccountConfiguration from "./pages/get-started/AccountConfiguration";
 import { ToastContainer } from "react-toastify";
 import ReactQueryProviders from "./components/ReactQueryProviders";
@@ -24,6 +22,8 @@ import TaskDetailsPage from "./pages/dashboard/TaskDetailsPage";
 import GoogleCallback from "./components/GoogleCallback";
 import BindEmail from "./pages/get-started/BindEmail";
 import CreateWallet from "./pages/get-started/CreateWallet";
+import GetStarted from "./pages/get-started/GetStarted";
+import WalletCreatedSuccess from "./pages/get-started/WalletCreatedSuccess";
 
 const router = createBrowserRouter([
   {
@@ -51,11 +51,12 @@ const router = createBrowserRouter([
     path: "get-started",
     Component: AuthLayout,
     children: [
-      { index: true, Component: CreateAccount },
+      { index: true, Component: GetStarted },
       { path: "verify-email", Component: VerifyEmail },
       { path: "username", Component: Username },
       { path: "bind-email", Component: BindEmail },
       { path: "create-wallet", Component: CreateWallet },
+      { path: "wallet-created-success", Component: WalletCreatedSuccess },
       { path: "account-configuration", Component: AccountConfiguration },
       {
         path: "*",
@@ -69,23 +70,23 @@ const router = createBrowserRouter([
       },
     ],
   },
-  {
-    path: "login",
-    Component: AuthLayout,
-    children: [
-      { index: true, Component: Login },
-      {
-        path: "*",
-        element: (
-          <div className="flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-red-500">
-              404 – Page Not Found
-            </h1>
-          </div>
-        ),
-      },
-    ],
-  },
+  // {
+  //   path: "login",
+  //   Component: AuthLayout,
+  //   children: [
+  //     { index: true, Component: Login },
+  //     {
+  //       path: "*",
+  //       element: (
+  //         <div className="flex items-center justify-center">
+  //           <h1 className="text-3xl font-bold text-red-500">
+  //             404 – Page Not Found
+  //           </h1>
+  //         </div>
+  //       ),
+  //     },
+  //   ],
+  // },
   {
     path: "google",
     Component: AuthLayout,
