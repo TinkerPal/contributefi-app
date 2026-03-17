@@ -762,7 +762,7 @@ export const DASHBOARD_NAV_LINKS = [
         icon: HiSquare3Stack3D,
       },
       { title: "Tasks", href: "/tasks", icon: FaNewspaper },
-
+      { title: "Burst", href: "/burst", icon: FaNewspaper },
       {
         title: "Analytics",
         href: "/analytics",

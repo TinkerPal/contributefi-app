@@ -1,6 +1,6 @@
 import { useAuth } from "@/hooks/useAuth";
 import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import { useQuery } from "@tanstack/react-query";
 import { getUser } from "@/services";
@@ -9,36 +9,23 @@ import { PiWarningCircle } from "react-icons/pi";
 function GoogleCallback() {
   const { login, token } = useAuth();
   const navigate = useNavigate();
-  const hasHandled = useRef(false);
-  const navigateRef = useRef(navigate);
-  const loginRef = useRef(login);
-
-  // Keep refs in sync without triggering effects
-  useEffect(() => {
-    navigateRef.current = navigate;
-    loginRef.current = login;
-  });
+  const [searchParams] = useSearchParams();
+  const hasRun = useRef(false);
+  const urlToken = searchParams.get("token");
 
   useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const tokenFromUrl = urlParams.get("token");
-
-    if (tokenFromUrl) {
-      loginRef.current({
-        token: tokenFromUrl,
-        email: null,
-        user: null,
-        otp: null,
-        username: null,
-        authMethod: "GOOGLE",
-      });
-    } else {
-      toast.error("Authentication failed");
-      navigateRef.current("/login", { replace: true });
-    }
+    login({
+      token: urlToken,
+      email: null,
+      user: null,
+      otp: null,
+      username: null,
+      authMethod: "GOOGLE",
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { data, isSuccess, isError } = useQuery({
+  const { data, isError } = useQuery({
     queryKey: ["getUser"],
     queryFn: getUser,
     enabled: !!token,
@@ -46,33 +33,34 @@ function GoogleCallback() {
   });
 
   useEffect(() => {
-    if (!isSuccess || hasHandled.current) return;
-    hasHandled.current = true;
+    if (!data || hasRun.current) return;
+
+    hasRun.current = true;
 
     const user = data.data.content;
 
     if (!user.username) {
-      loginRef.current({
+      login({
         token,
         email: user.email,
         user: null,
         otp: "123456",
         username: null,
       });
-      navigateRef.current("/get-started/username", { replace: true });
+      navigate("/get-started/username", { replace: true });
     } else if (!user.bio && !user.lastLogin) {
-      loginRef.current({
+      login({
         token,
         email: user.email,
         user: null,
         otp: null,
         username: user.username,
       });
-      navigateRef.current("/get-started/account-configuration", {
+      navigate("/get-started/account-configuration", {
         replace: true,
       });
     } else {
-      loginRef.current({
+      login({
         token,
         email: null,
         user,
@@ -80,9 +68,9 @@ function GoogleCallback() {
         username: null,
       });
       toast.success("Login successful");
-      navigateRef.current("/", { replace: true });
+      navigate("/", { replace: true });
     }
-  }, [isSuccess, data, token]);
+  }, [login, data, navigate, token]);
 
   if (isError) {
     return (

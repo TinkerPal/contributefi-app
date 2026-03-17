@@ -2,7 +2,7 @@ import DashboardLayoutContainer from "./DashboardLayoutContainer";
 import DashboardMobileHeader from "./DashboardMobileHeader";
 import MobileNavigation from "../MobileNavigation";
 import DashboardNavigation from "./DashboardNavigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import DashboardSidebarContainer from "./DashboardSidebarContainer";
 import DashboardDesktopHeader from "./DashboardDesktopHeader";
 import { Outlet, useLocation, useParams } from "react-router";
@@ -24,14 +24,58 @@ import ScrollToTop from "../ScrollToTop";
 import { useWallet } from "@/hooks/useWallet";
 
 function DashboardLayout() {
-  const { user, isAuthenticated, setUser } = useAuth();
+  const { user, isAuthenticated, setUser, token } = useAuth();
   const { publicKey } = useWallet();
 
   console.log("DashboardLayout render - publicKey:", publicKey);
 
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
+  const [isTelegramAuthenticating, setIsTelegramAuthenticating] = useState(
+    () => {
+      return (
+        window.location.hash && window.location.hash.includes("tgAuthResult=")
+      );
+    },
+  );
 
   const location = useLocation();
+
+  useEffect(() => {
+    const handleTelegramAuth = async () => {
+      const hash = window.location.hash;
+      if (hash && hash.includes("tgAuthResult=")) {
+        const params = new URLSearchParams(hash.substring(1));
+        const tgAuthResult = params.get("tgAuthResult");
+
+        if (tgAuthResult && token) {
+          try {
+            setIsTelegramAuthenticating(true);
+            const telegramData = JSON.parse(atob(tgAuthResult));
+
+            await fetch(`${import.meta.env.VITE_BASE_URL}/auth/telegram/link`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                telegramData,
+              }),
+            });
+
+            window.location.hash = "";
+            window.location.href = "/get-started/account-configuration";
+          } catch (error) {
+            console.error("Failed to link Telegram account:", error);
+            toast.error("Failed to link Telegram account");
+            setIsTelegramAuthenticating(false);
+          }
+        }
+      }
+    };
+
+    handleTelegramAuth();
+  }, [token]);
 
   const pathSegments = location.pathname.split("/").filter(Boolean);
   const currentPath = pathSegments[pathSegments.length - 1];
@@ -83,141 +127,149 @@ function DashboardLayout() {
   };
 
   return (
-    <DashboardLayoutContainer>
-      <ScrollToTop />
-      <DashboardMobileHeader>
-        <MobileNavigation
-          side="left"
-          sheetIsOpen={sheetIsOpen}
-          setSheetIsOpen={setSheetIsOpen}
-          tag="dashboard"
-        >
-          <DashboardNavigation
-            setSheetIsOpen={setSheetIsOpen}
-            platform="mobile"
-          />
-        </MobileNavigation>
-
-        <DashboardLogo />
-
-        {isAuthenticated && (
-          <>
-            <div className="flex flex-col items-center gap-4 sm:flex-row">
-              <Label
-                htmlFor="image"
-                className="relative flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#F7F9FD]"
-              >
-                {user?.profileImageUrl ? (
-                  <img
-                    src={user?.profileImageUrl}
-                    alt="Selected avatar"
-                    height={40}
-                    width={40}
-                    className="h-[40px] w-[40px] rounded-full"
-                  />
-                ) : (
-                  <FaUserLarge className="text-[40px] text-[#B2B9C7]" />
-                )}
-                <Input
-                  onChange={handleImageSelect}
-                  type="file"
-                  id="image"
-                  className="hidden"
-                  disabled={uploading}
-                />
-
-                <div className="absolute right-0 bottom-0 rounded-full bg-[#F7F9FD] p-1 shadow">
-                  {uploading ? (
-                    <ImSpinner5 className="animate-spin" />
-                  ) : (
-                    <FaPlus className="text-[#2F0FD1]" />
-                  )}
-                </div>
-              </Label>
-            </div>
-          </>
-        )}
-      </DashboardMobileHeader>
-
-      <DashboardSidebarContainer>
-        <div className="h-[70px] border-b border-gray-300 bg-white py-4 text-center">
-          <DashboardLogo />
+    <>
+      {isTelegramAuthenticating ? (
+        <div className="flex h-screen w-full items-center justify-center">
+          <ImSpinner5 className="animate-spin text-[40px] text-[#5865F2]" />
         </div>
+      ) : (
+        <DashboardLayoutContainer>
+          <ScrollToTop />
+          <DashboardMobileHeader>
+            <MobileNavigation
+              side="left"
+              sheetIsOpen={sheetIsOpen}
+              setSheetIsOpen={setSheetIsOpen}
+              tag="dashboard"
+            >
+              <DashboardNavigation
+                setSheetIsOpen={setSheetIsOpen}
+                platform="mobile"
+              />
+            </MobileNavigation>
 
-        <DashboardNavigation
-          setSheetIsOpen={setSheetIsOpen}
-          platform="desktop"
-        />
-      </DashboardSidebarContainer>
+            <DashboardLogo />
 
-      <DashboardDesktopHeader>
-        {communityId || taskId ? <BackButton /> : <Heading />}
-
-        <div className="flex items-center gap-4">
-          {currentPath === "communities" && !communityId && (
-            <div className="hidden items-center gap-3 lg:flex lg:flex-row">
-              <div>
-                <CustomSearch placeholder="Search community" />
-              </div>
-
-              <div>
-                <CreateCommunityForm />
-              </div>
-            </div>
-          )}
-
-          {currentPath === "tasks" && !taskId && (
-            <div className="hidden items-center gap-3 lg:flex lg:flex-row">
-              <div>
-                <CustomSearch placeholder="Search task" />
-              </div>
-            </div>
-          )}
-
-          {isAuthenticated && (
-            <>
-              <div className="flex flex-col items-center gap-4 sm:flex-row">
-                <Label
-                  htmlFor="image"
-                  className="relative flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#F7F9FD]"
-                >
-                  {user?.profileImageUrl ? (
-                    <img
-                      src={user?.profileImageUrl}
-                      alt="Selected avatar"
-                      height={40}
-                      width={40}
-                      className="h-[40px] w-[40px] rounded-full"
-                    />
-                  ) : (
-                    <FaUserLarge className="text-[40px] text-[#B2B9C7]" />
-                  )}
-                  <Input
-                    onChange={handleImageSelect}
-                    type="file"
-                    id="image"
-                    className="hidden"
-                    disabled={uploading}
-                  />
-
-                  <div className="absolute right-0 bottom-0 rounded-full bg-[#F7F9FD] p-1 shadow">
-                    {uploading ? (
-                      <ImSpinner5 className="animate-spin" />
+            {isAuthenticated && (
+              <>
+                <div className="flex flex-col items-center gap-4 sm:flex-row">
+                  <Label
+                    htmlFor="image"
+                    className="relative flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#F7F9FD]"
+                  >
+                    {user?.profileImageUrl ? (
+                      <img
+                        src={user?.profileImageUrl}
+                        alt="Selected avatar"
+                        height={40}
+                        width={40}
+                        className="h-[40px] w-[40px] rounded-full"
+                      />
                     ) : (
-                      <FaPlus className="text-[#2F0FD1]" />
+                      <FaUserLarge className="text-[40px] text-[#B2B9C7]" />
                     )}
-                  </div>
-                </Label>
-              </div>
-            </>
-          )}
-        </div>
-      </DashboardDesktopHeader>
+                    <Input
+                      onChange={handleImageSelect}
+                      type="file"
+                      id="image"
+                      className="hidden"
+                      disabled={uploading}
+                    />
 
-      <DashboardContainer>
-        <Outlet />
-      </DashboardContainer>
-    </DashboardLayoutContainer>
+                    <div className="absolute right-0 bottom-0 rounded-full bg-[#F7F9FD] p-1 shadow">
+                      {uploading ? (
+                        <ImSpinner5 className="animate-spin" />
+                      ) : (
+                        <FaPlus className="text-[#2F0FD1]" />
+                      )}
+                    </div>
+                  </Label>
+                </div>
+              </>
+            )}
+          </DashboardMobileHeader>
+
+          <DashboardSidebarContainer>
+            <div className="h-[70px] border-b border-gray-300 bg-white py-4 text-center">
+              <DashboardLogo />
+            </div>
+
+            <DashboardNavigation
+              setSheetIsOpen={setSheetIsOpen}
+              platform="desktop"
+            />
+          </DashboardSidebarContainer>
+
+          <DashboardDesktopHeader>
+            {communityId || taskId ? <BackButton /> : <Heading />}
+
+            <div className="flex items-center gap-4">
+              {currentPath === "communities" && !communityId && (
+                <div className="hidden items-center gap-3 lg:flex lg:flex-row">
+                  <div>
+                    <CustomSearch placeholder="Search community" />
+                  </div>
+
+                  <div>
+                    <CreateCommunityForm />
+                  </div>
+                </div>
+              )}
+
+              {currentPath === "tasks" && !taskId && (
+                <div className="hidden items-center gap-3 lg:flex lg:flex-row">
+                  <div>
+                    <CustomSearch placeholder="Search task" />
+                  </div>
+                </div>
+              )}
+
+              {isAuthenticated && (
+                <>
+                  <div className="flex flex-col items-center gap-4 sm:flex-row">
+                    <Label
+                      htmlFor="image"
+                      className="relative flex h-[50px] w-[50px] shrink-0 cursor-pointer items-center justify-center rounded-full bg-[#F7F9FD]"
+                    >
+                      {user?.profileImageUrl ? (
+                        <img
+                          src={user?.profileImageUrl}
+                          alt="Selected avatar"
+                          height={40}
+                          width={40}
+                          className="h-[40px] w-[40px] rounded-full"
+                        />
+                      ) : (
+                        <FaUserLarge className="text-[40px] text-[#B2B9C7]" />
+                      )}
+                      <Input
+                        onChange={handleImageSelect}
+                        type="file"
+                        id="image"
+                        className="hidden"
+                        disabled={uploading}
+                      />
+
+                      <div className="absolute right-0 bottom-0 rounded-full bg-[#F7F9FD] p-1 shadow">
+                        {uploading ? (
+                          <ImSpinner5 className="animate-spin" />
+                        ) : (
+                          <FaPlus className="text-[#2F0FD1]" />
+                        )}
+                      </div>
+                    </Label>
+                  </div>
+                </>
+              )}
+            </div>
+          </DashboardDesktopHeader>
+
+          <DashboardContainer>
+            <Outlet />
+          </DashboardContainer>
+        </DashboardLayoutContainer>
+      )}
+    </>
   );
 }
 

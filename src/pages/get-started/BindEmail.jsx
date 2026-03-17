@@ -60,10 +60,10 @@ function BindEmail() {
     <div>
       <div className="mb-8 space-y-[8px]">
         <h2 className="text-[24px] font-bold text-[#09032A] md:text-[28px]">
-          Connect Email Address
+          Add an Email Address
         </h2>
         <p className="text-base font-light text-[#525866] md:text-[18px]">
-          Provide your email address
+          Kindly use an email you have access to
         </p>
         <Link
           to="/get-started/account-configuration"

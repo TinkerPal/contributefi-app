@@ -36,12 +36,12 @@ api.interceptors.response.use(
       removeItemFromLocalStorage("network");
       removeItemFromLocalStorage("publicKey");
 
-      const currentPath = window.location.pathname;
-      const redirectUrl =
-        currentPath !== "/"
-          ? `?redirect=${encodeURIComponent(currentPath)}`
-          : "";
-      window.location.href = `/login${redirectUrl}`;
+      // const currentPath = window.location.pathname;
+      // const redirectUrl =
+      //   currentPath !== "/"
+      //     ? `?redirect=${encodeURIComponent(currentPath)}`
+      //     : "";
+      window.location.href = `/get-started`;
     }
 
     return Promise.reject(error);

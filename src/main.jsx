@@ -39,11 +39,12 @@ const router = createBrowserRouter([
       },
       { path: "tasks", Component: Tasks },
       { path: "tasks/:taskId", Component: TaskDetailsPage },
-      { path: "earnings", element: <></> },
-      { path: "analytics", element: <></> },
-      { path: "profile", element: <></> },
-      { path: "notifications", element: <></> },
-      { path: "help", element: <></> },
+      { path: "burst", element: <>Coming Soon...</> },
+      { path: "earnings", element: <>Coming Soon...</> },
+      { path: "analytics", element: <>Coming Soon...</> },
+      { path: "profile", element: <>Coming Soon...</> },
+      { path: "notifications", element: <>Coming Soon...</> },
+      { path: "help", element: <>Coming Soon...</> },
       { path: "*", Component: NotFound },
     ],
   },
@@ -58,35 +59,9 @@ const router = createBrowserRouter([
       { path: "create-wallet", Component: CreateWallet },
       { path: "wallet-created-success", Component: WalletCreatedSuccess },
       { path: "account-configuration", Component: AccountConfiguration },
-      {
-        path: "*",
-        element: (
-          <div className="flex items-center justify-center">
-            <h1 className="text-3xl font-bold text-red-500">
-              404 – Page Not Found
-            </h1>
-          </div>
-        ),
-      },
     ],
   },
-  // {
-  //   path: "login",
-  //   Component: AuthLayout,
-  //   children: [
-  //     { index: true, Component: Login },
-  //     {
-  //       path: "*",
-  //       element: (
-  //         <div className="flex items-center justify-center">
-  //           <h1 className="text-3xl font-bold text-red-500">
-  //             404 – Page Not Found
-  //           </h1>
-  //         </div>
-  //       ),
-  //     },
-  //   ],
-  // },
+
   {
     path: "google",
     Component: AuthLayout,
