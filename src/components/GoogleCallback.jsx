@@ -46,6 +46,7 @@ function GoogleCallback() {
         user: null,
         otp: "123456",
         username: null,
+        authMethod: "GOOGLE",
       });
       navigate("/get-started/username", { replace: true });
     } else if (!user.bio && !user.lastLogin) {
@@ -55,6 +56,7 @@ function GoogleCallback() {
         user: null,
         otp: null,
         username: user.username,
+        authMethod: "GOOGLE",
       });
       navigate("/get-started/account-configuration", {
         replace: true,
@@ -66,6 +68,7 @@ function GoogleCallback() {
         user,
         otp: null,
         username: null,
+        authMethod: "GOOGLE",
       });
       toast.success("Login successful");
       navigate("/", { replace: true });

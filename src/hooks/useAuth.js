@@ -2,9 +2,6 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   setUser,
   setToken,
-  setEmail,
-  setOtp,
-  setUsername,
   login as loginAction,
   logout as logoutAction,
 } from "@/store/authSlice";
@@ -19,11 +16,12 @@ export const useAuth = () => {
   const email = useSelector((state) => state.auth.email);
   const otp = useSelector((state) => state.auth.otp);
   const username = useSelector((state) => state.auth.username);
+  const authMethod = useSelector((state) => state.auth.authMethod);
 
   const isAuthenticated = !!token && !!user;
 
-  const login = ({ token, email, user, otp, username }) => {
-    dispatch(loginAction({ token, email, user, otp, username }));
+  const login = ({ token, email, user, otp, username, authMethod }) => {
+    dispatch(loginAction({ token, email, user, otp, username, authMethod }));
   };
 
   const logout = () => {
@@ -46,5 +44,6 @@ export const useAuth = () => {
     email,
     otp,
     username,
+    authMethod,
   };
 };

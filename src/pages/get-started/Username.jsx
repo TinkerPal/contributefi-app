@@ -12,11 +12,12 @@ import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 
 function Username() {
-  const { login, token, otp, username, email } = useAuth();
+  const { login, token, otp, username, email, authMethod } = useAuth();
   const navigate = useNavigate();
-
   const [usernameInput, setUsernameInput] = useState("");
   const [debouncedUsername, setDebouncedUsername] = useState("");
+
+  console.log({ login, token, otp, username, email, authMethod });
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -27,6 +28,8 @@ function Username() {
       clearTimeout(handler);
     };
   }, [usernameInput]);
+
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (!otp && username) {
@@ -43,8 +46,6 @@ function Username() {
       navigate("/get-started/create-wallet");
     }
   }, [navigate, username, email, otp]);
-
-  console.log({ otp, username, email });
 
   const {
     register,
