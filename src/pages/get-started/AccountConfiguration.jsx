@@ -166,7 +166,22 @@ function AccountConfiguration() {
           body: JSON.stringify({ username: telegramUsername.trim() }),
         },
       );
-      const data = await response.json();
+      let data;
+      try {
+        data = await response.json();
+      } catch {
+        data = {};
+      }
+      if (!response.ok) {
+        const errorMessage =
+          data?.message ||
+          data?.error ||
+          `Request failed with status ${response.status}`;
+        toast.error(errorMessage);
+        setTelegramLinkStep("idle");
+        setLinkingAccount(null);
+        return;
+      }
       if (data?.content?.pendingId) {
         setTelegramPendingId(data.content.pendingId);
         setTelegramLinkStep("waiting_start");
@@ -174,7 +189,7 @@ function AccountConfiguration() {
         setShowInstructionModal(true);
         setLinkingAccount(null);
       } else {
-        toast.error(data?.message || "Failed to initiate linking");
+        toast.error(data?.message || "Unexpected response from server");
         setTelegramLinkStep("idle");
         setLinkingAccount(null);
       }
@@ -233,7 +248,7 @@ function AccountConfiguration() {
     setShowInstructionModal(false);
     setShowOtpModal(false);
   };
-  const [bio, setBio] = useState("");
+  const [bio, setBio] = useState(() => getItemFromSessionStorage("bio") || "");
   const handleImageSelect = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -284,6 +299,7 @@ function AccountConfiguration() {
       });
       removeItemFromSessionStorage("user");
       removeItemFromSessionStorage("imageUrl");
+      removeItemFromSessionStorage("bio");
     } else {
       setSaving(true);
       try {
@@ -316,6 +332,7 @@ function AccountConfiguration() {
       });
       removeItemFromSessionStorage("user");
       removeItemFromSessionStorage("imageUrl");
+      removeItemFromSessionStorage("bio");
     }
   };
   return (
@@ -342,8 +359,9 @@ function AccountConfiguration() {
             });
             removeItemFromSessionStorage("user");
             removeItemFromSessionStorage("imageUrl");
+            removeItemFromSessionStorage("bio");
           }}
-          className="absolute top-5 right-10 text-base font-medium text-[#2F0FD1] sm:top-10"
+          className={`absolute top-5 right-10 text-base font-medium text-[#2F0FD1] sm:top-10 ${(imageUrl || bio.trim().length > 0 || linkedAccounts.length > 0) && "hidden"} `}
         >
           Skip till Later &gt;&gt;
         </Link>
@@ -381,103 +399,128 @@ function AccountConfiguration() {
           <Textarea
             className="h-[80px] rounded-[12px] border-none bg-[#F7F9FD] px-4 placeholder:text-sm placeholder:text-[#8791A7] focus:border-none focus:outline-0 focus:outline-none focus-visible:border-none focus-visible:ring-0"
             placeholder="Briefly tell us about you"
-            onChange={(e) => setBio(e.target.value)}
+            onChange={(e) => {
+              setBio(e.target.value);
+              setItemInSessionStorage("bio", e.target.value);
+            }}
             value={bio}
           />
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {telegramLinkStep !== "idle" ? (
-            <div className="rounded-[12px] bg-[#F7F9FD] px-4 py-4">
-              <div className="mb-3 flex items-center gap-2">
-                <FaTelegram className="text-[27px] text-[#23B7EC]" />
-                <span className="text-base font-normal text-[#09032A]">
-                  Telegram
-                </span>
-              </div>
-              {telegramLinkStep === "entering_username" && (
-                <div className="space-y-3">
-                  <p className="text-sm text-[#525866]">
-                    Enter your Telegram username (without @)
-                  </p>
-                  <Input
-                    placeholder="username"
-                    value={telegramUsername}
-                    onChange={(e) => setTelegramUsername(e.target.value)}
-                    className="bg-white"
-                  />
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={handleTelegramSubmitUsername}
-                      disabled={linkingAccount === "telegram"}
-                    >
-                      {linkingAccount === "telegram" ? (
-                        <ImSpinner5 className="animate-spin" />
-                      ) : (
-                        "Continue"
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={handleTelegramCancel}
-                    >
-                      Cancel
-                    </Button>
+          {ACCOUNTS_TO_LINK.map((account) => {
+            const linkedAccount = linkedAccounts.find(
+              (acc) => acc.provider === account.key,
+            );
+            const isLinked = !!linkedAccount;
+            const isLinking = linkingAccount === account.key;
+            const isTelegramLinking =
+              account.key === "telegram" && telegramLinkStep !== "idle";
+            return (
+              <div
+                key={account.title}
+                className="rounded-[12px] bg-[#F7F9FD] px-4 py-3"
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    {account.icon}
+                    <span className="text-base font-normal text-[#09032A]">
+                      {isLinked && linkedAccount?.username
+                        ? `@${linkedAccount.username}`
+                        : account.title}
+                    </span>
                   </div>
-                </div>
-              )}
-            </div>
-          ) : (
-            ACCOUNTS_TO_LINK.map((account) => {
-              const linkedAccount = linkedAccounts.find(
-                (acc) => acc.provider === account.key,
-              );
-              const isLinked = !!linkedAccount;
-              const isLinking = linkingAccount === account.key;
-              return (
-                <button
-                  key={account.title}
-                  type="button"
-                  disabled={isLinking || isLinked || loadingAccounts}
-                  onClick={() => handleLinkAccount(account.key)}
-                  className="flex items-center justify-between rounded-[12px] bg-[#F7F9FD] px-4 py-3 disabled:opacity-50"
-                >
-                  <div className="flex flex-col items-start gap-1">
-                    <div className="flex items-center gap-2">
-                      {account.icon}
-                      <span className="text-base font-normal text-[#09032A]">
-                        {isLinked && linkedAccount?.username
-                          ? `@${linkedAccount.username}`
-                          : account.title}
-                      </span>
-                    </div>
-                  </div>
-                  {loadingAccounts ? (
-                    <ImSpinner5 className="animate-spin text-[#5865F2]" />
-                  ) : isLinking ? (
+                  {loadingAccounts || isLinking ? (
                     <ImSpinner5 className="animate-spin text-[#5865F2]" />
                   ) : isLinked ? (
                     <FaCheck className="text-green-500" />
                   ) : (
-                    <FaPlus className="text-[#5865F2]" />
+                    <button
+                      type="button"
+                      onClick={() => handleLinkAccount(account.key)}
+                      className="text-[#5865F2]"
+                    >
+                      <FaPlus />
+                    </button>
                   )}
-                </button>
-              );
-            })
-          )}
+                </div>
+                {isTelegramLinking && (
+                  <div className="mt-3 space-y-3 border-t border-gray-200 pt-3">
+                    {telegramLinkStep === "entering_username" && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-[#525866]">
+                          Enter your Telegram username
+                        </p>
+                        <Input
+                          placeholder="username"
+                          value={telegramUsername}
+                          onChange={(e) => setTelegramUsername(e.target.value)}
+                          className="bg-white"
+                        />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={handleTelegramSubmitUsername}
+                            disabled={linkingAccount === "telegram"}
+                          >
+                            {linkingAccount === "telegram" ? (
+                              <ImSpinner5 className="animate-spin" />
+                            ) : (
+                              "Continue"
+                            )}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleTelegramCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                    {telegramLinkStep === "waiting_start" && (
+                      <div className="space-y-2">
+                        <p className="text-sm text-[#525866]">
+                          Waiting for OTP. Make sure you messaged the bot.
+                        </p>
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() => setShowOtpModal(true)}
+                          >
+                            Enter OTP
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={handleTelegramCancel}
+                          >
+                            Cancel
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
           <div />
           <Button
             className="ml-auto w-full"
             disabled={
-              uploading || (!imageUrl && bio.trim().length === 0) || saving
+              uploading ||
+              (!imageUrl &&
+                bio.trim().length === 0 &&
+                linkedAccounts.length === 0) ||
+              saving
             }
             variant="secondary"
             size="lg"
             type="button"
             onClick={handleSaveDetails}
           >
-            {saving ? "Saving..." : "Save Details"}
+            {saving ? "Saving..." : "Continue"}
           </Button>
         </div>
       </div>
@@ -488,9 +531,7 @@ function AccountConfiguration() {
         heading="Link Telegram Account"
       >
         <div className="space-y-4">
-          <p className="text-sm text-gray-600">
-            Enter your Telegram username (without @)
-          </p>
+          <p className="text-sm text-gray-600">Enter your Telegram username</p>
           <Input
             placeholder="username"
             value={telegramUsername}
@@ -545,10 +586,7 @@ function AccountConfiguration() {
                 "Verify"
               )}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => setShowOtpModal(false)}
-            >
+            <Button variant="outline" onClick={() => setShowOtpModal(false)}>
               Cancel
             </Button>
           </div>
@@ -561,16 +599,16 @@ function AccountConfiguration() {
         heading="Link Telegram Account"
       >
         <div className="space-y-4">
-          <div className="text-sm text-gray-600 space-y-2">
+          <div className="space-y-2 text-sm text-gray-600">
             <p>Follow these steps to link your Telegram account:</p>
-            <ol className="list-decimal list-inside space-y-1">
+            <ol className="list-inside list-decimal space-y-1">
               <li>
                 Go to Telegram and open the{" "}
                 <a
                   href="https://t.me/contributefi_bot"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-[#2F0FD1] hover:underline font-medium"
+                  className="font-medium text-[#2F0FD1] hover:underline"
                 >
                   ContributeFi bot
                 </a>
@@ -583,9 +621,7 @@ function AccountConfiguration() {
             Waiting for OTP...
           </p>
           <div className="flex gap-2">
-            <Button onClick={() => setShowOtpModal(true)}>
-              Enter OTP
-            </Button>
+            <Button onClick={() => setShowOtpModal(true)}>Enter OTP</Button>
             <Button variant="outline" onClick={handleTelegramCancel}>
               Cancel
             </Button>

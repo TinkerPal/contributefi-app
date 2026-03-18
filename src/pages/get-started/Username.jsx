@@ -86,7 +86,6 @@ function Username() {
             });
             navigate("/get-started/create-wallet", { replace: true });
           }
-          toast.success("Username created successfully");
           reset();
         } else {
           toast.error("Something went wrong");
