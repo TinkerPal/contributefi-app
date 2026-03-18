@@ -4,7 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery } from "@tanstack/react-query";
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaUserLarge, FaCheck } from "react-icons/fa6";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { PiGithubLogoFill } from "react-icons/pi";
 import { FaDiscord } from "react-icons/fa";
 import { FaSquareXTwitter } from "react-icons/fa6";
@@ -73,8 +73,6 @@ function AccountConfiguration() {
     enabled: !!token,
   });
 
-  console.log({ linkedAccountsData });
-
   const linkedAccounts = React.useMemo(() => {
     if (!linkedAccountsData?.data?.content) return [];
     const content = linkedAccountsData.data.content;
@@ -101,13 +99,29 @@ function AccountConfiguration() {
     return [];
   }, [linkedAccountsData]);
 
+  const [searchParams] = useSearchParams();
+  const error = searchParams.get("error");
+  const message = searchParams.get("message");
+
   useEffect(() => {
     if (!username) {
       navigate("/get-started/username");
     }
   }, [navigate, username]);
 
-  console.log({ linkedAccounts, user });
+  useEffect(() => {
+    console.log("AccountConfiguration mounted with:", { error, message });
+
+    if (error) {
+      const errorMessage = message
+        ? decodeURIComponent(message)
+        : "An error occurred while linking your account";
+
+      toast.error(errorMessage);
+
+      navigate(".", { replace: true });
+    }
+  }, [error, message, navigate]);
 
   const handleLinkAccount = async (accountType) => {
     const userId = user?.id;
@@ -550,7 +564,17 @@ function AccountConfiguration() {
           <div className="text-sm text-gray-600 space-y-2">
             <p>Follow these steps to link your Telegram account:</p>
             <ol className="list-decimal list-inside space-y-1">
-              <li>Go to Telegram and open the ContributeFi bot</li>
+              <li>
+                Go to Telegram and open the{" "}
+                <a
+                  href="https://t.me/contributefi_bot"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-[#2F0FD1] hover:underline font-medium"
+                >
+                  ContributeFi bot
+                </a>
+              </li>
               <li>Press /start</li>
               <li>You will receive an OTP code</li>
             </ol>
