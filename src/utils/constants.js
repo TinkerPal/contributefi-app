@@ -1,8 +1,15 @@
 export const REWARD_MODES = ["Overall Reward", "Individual Task Reward"];
+export const SENTIMENT_CHECK = ["Positive", "Neutral", "Negative"];
 
 export const REWARD_TYPES = [
   { label: "Points", value: "Points" },
   { label: "Token", value: "Token" },
+];
+
+export const SOCIAL_MEDIA_PLATFORM = [
+  { label: "X (Twitter)", value: "twitter" },
+  { label: "Discord", value: "discord" },
+  { label: "Telegram", value: "telegram" },
 ];
 
 export const NETWORK_TYPES = [

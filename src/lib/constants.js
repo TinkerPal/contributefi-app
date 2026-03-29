@@ -867,3 +867,66 @@ export const COMMUNITIES_DETAILS = [
   { title: "Total Tasks", value: 12 },
   { title: "Total Spent", value: 2000 },
 ];
+
+export const BURST = [
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 45,
+    numberOfMembers: 24,
+  },
+  {
+    burstTitle: "Errand Trending Topics",
+    amount: 30,
+    numberOfMembers: 18,
+  },
+];

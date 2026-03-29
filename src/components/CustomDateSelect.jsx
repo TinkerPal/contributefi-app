@@ -13,9 +13,11 @@ export default function CustomDateSelect({
   runContinuously,
   startDateError,
   endDateError,
+  startTime,
 }) {
   const [openStartDate, setOpenStartDate] = useState(false);
   const [openEndDate, setOpenEndDate] = useState(false);
+  const [openStartTime, setOpenStartTime] = useState(false);
 
   return (
     <Label className="flex flex-col items-start gap-2 font-light text-[#09032A]">
@@ -65,6 +67,41 @@ export default function CustomDateSelect({
                   className="h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]"
                 >
                   {endDate ? endDate.toLocaleDateString() : "End Date"}
+                  <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                className="w-auto overflow-hidden p-0"
+                align="start"
+              >
+                <Calendar
+                  mode="single"
+                  selected={endDate}
+                  captionLayout="dropdown"
+                  onSelect={(date) => {
+                    onEndDateChange(date);
+                    setOpenEndDate(false);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+
+            {endDateError && (
+              <span className="text-xs text-red-500">{endDateError}</span>
+            )}
+          </div>
+        )}
+
+        {startTime && (
+          <div className="flex h-full w-full flex-col gap-1 sm:w-[48%]">
+            <Popover open={openStartTime} onOpenChange={setOpenStartTime}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  id="date"
+                  className="h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]"
+                >
+                  {startTime ? "" : "Start Time"}
                   <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />
                 </Button>
               </PopoverTrigger>

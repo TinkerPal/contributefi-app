@@ -82,6 +82,7 @@ function DashboardLayout() {
 
   const { communityAlias: communityId } = useParams();
   const { taskId } = useParams();
+  const { newBurst } = useParams();
 
   const [uploading, setUploading] = useState(false);
 
@@ -201,7 +202,13 @@ function DashboardLayout() {
           </DashboardSidebarContainer>
 
           <DashboardDesktopHeader>
-            {communityId || taskId ? <BackButton /> : <Heading />}
+            {communityId || taskId ? (
+              <BackButton />
+            ) : newBurst ? (
+              <div></div>
+            ) : (
+              <Heading />
+            )}
 
             <div className="flex items-center gap-4">
               {currentPath === "communities" && !communityId && (
