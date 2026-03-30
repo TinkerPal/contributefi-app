@@ -1,38 +1,84 @@
-import { FaCloudUploadAlt } from "react-icons/fa";
-import { useId } from "react";
+import { useId, useState } from "react";
 
 export default function FileUpload({
-  description = "PNG, JPG up to 5MB",
-  buttonText = "Upload Photo",
   accept = "image/png, image/jpeg",
   className = "",
+  error,
+  onUpload,
+  setPreviews,
+  previews,
+  disabled,
   ...props
 }) {
   const id = useId();
+  const [uploading, setUploading] = useState(false);
+
+  // In FileUpload component - handle the array response
+  const handleChange = async (e) => {
+    const files = Array.from(e.target.files);
+    if (!files.length || !onUpload || !setPreviews) return;
+    setUploading(true);
+    try {
+      for (const file of files) {
+        await onUpload(file);
+      }
+    } catch (err) {
+      console.error("Upload failed:", err);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const isDisabled = uploading || disabled;
 
   return (
-    <div
-      className={`h-[80px] w-full cursor-pointer rounded-[4px] border border-dashed border-[#B2B9C766] bg-[#F7F9FD] text-center transition hover:bg-[#EFF2FA] ${className}`}
-    >
-      <input
-        type="file"
-        accept={accept}
-        className="hidden"
-        id={id}
-        {...props}
-      />
-      <label
-        htmlFor={id}
-        className="flex h-full cursor-pointer flex-col items-center justify-center gap-2"
+    <div className="space-y-2">
+      <div
+        className={`h-[100px] w-full cursor-pointer overflow-hidden rounded-[4px] border border-dashed border-[#B2B9C766] bg-[#F7F9FD] text-center transition hover:bg-[#EFF2FA] ${className} ${isDisabled ? "cursor-not-allowed opacity-50" : ""}`}
       >
-        <div className="flex items-center gap-1">
-          <FaCloudUploadAlt className="text-[#2F0FD1]" />
-          <span className="font-medium text-[#2F0FD1]">{buttonText}</span>
-        </div>
+        <input
+          type="file"
+          accept={accept}
+          multiple
+          className="hidden"
+          id={id}
+          onChange={handleChange}
+          disabled={isDisabled}
+          {...props}
+        />
+        <label
+          htmlFor={id}
+          className={`flex h-full cursor-pointer flex-col items-center justify-center gap-2 ${isDisabled ? "cursor-not-allowed" : ""}`}
+        >
+          <div className="flex flex-col items-center gap-1">
+            {previews.length < 3 && (
+              <>
+                {uploading ? (
+                  <span className="font-medium text-[#2F0FD1]">
+                    Uploading...
+                  </span>
+                ) : (
+                  <img src="/pic_2_fill.svg" alt="" />
+                )}
+              </>
+            )}
 
-        {/* Description */}
-        <p className="text-[14px] text-[#8E8E93]">{description}</p>
-      </label>
+            {previews.length > 0 && (
+              <div className="mt-2 flex flex-wrap justify-center gap-2">
+                {previews.map((url, idx) => (
+                  <img
+                    key={idx}
+                    src={url}
+                    alt={`Preview ${idx + 1}`}
+                    className="h-10 w-20 max-w-full min-w-[80px] rounded object-cover"
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        </label>
+      </div>
+      {error && <span className="text-xs text-red-500">{error}</span>}
     </div>
   );
 }

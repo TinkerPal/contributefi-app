@@ -19,7 +19,7 @@ export default function CustomDateSelect({
 
   return (
     <Label className="flex flex-col items-start gap-2 font-light text-[#09032A]">
-      <div className="relative flex h-[48px] w-full flex-col gap-5 rounded-[12px] sm:flex-row">
+      <div className="relative flex min-h-[48px] w-full flex-col gap-5 rounded-[12px] sm:flex-row">
         <div
           className={`flex h-full w-full flex-col gap-1 ${runContinuously ? "sm:w-full" : "sm:w-[48%]"}`}
         >
@@ -28,7 +28,7 @@ export default function CustomDateSelect({
               <Button
                 variant="outline"
                 id="date"
-                className={`h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]`}
+                className={`h-[48px] w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]`}
               >
                 {startDate ? startDate.toLocaleDateString() : "Start Date"}
                 <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />
@@ -62,7 +62,7 @@ export default function CustomDateSelect({
                 <Button
                   variant="outline"
                   id="date"
-                  className="h-full w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]"
+                  className="h-[48px] w-full justify-between bg-[#F7F9FD] font-normal text-[#8791A7] shadow-none hover:bg-[#F7F9FD] hover:text-[#8791A7]"
                 >
                   {endDate ? endDate.toLocaleDateString() : "End Date"}
                   <IoMdArrowDropdown className="size-6 text-[#B2B9C7]" />

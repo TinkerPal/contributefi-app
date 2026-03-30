@@ -24,6 +24,9 @@ import BindEmail from "./pages/get-started/BindEmail";
 import CreateWallet from "./pages/get-started/CreateWallet";
 import GetStarted from "./pages/get-started/GetStarted";
 import WalletCreatedSuccess from "./pages/get-started/WalletCreatedSuccess";
+import Burst from "./pages/dashboard/Burst";
+import NewBurst from "./pages/dashboard/NewBurst";
+import BurstDetailsPage from "./pages/dashboard/BurstDetailsPage";
 
 const router = createBrowserRouter([
   {
@@ -39,7 +42,9 @@ const router = createBrowserRouter([
       },
       { path: "tasks", Component: Tasks },
       { path: "tasks/:taskId", Component: TaskDetailsPage },
-      { path: "burst", element: <>Coming Soon...</> },
+      { path: "burst", Component: Burst },
+      { path: "burst/:newBurst", Component: NewBurst },
+      { path: "burst/detail/:burstId", Component: BurstDetailsPage },
       { path: "earnings", element: <>Coming Soon...</> },
       { path: "analytics", element: <>Coming Soon...</> },
       { path: "profile", element: <>Coming Soon...</> },

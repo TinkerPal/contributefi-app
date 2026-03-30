@@ -287,6 +287,44 @@ export const uploadCommunityCover = (file, communityId) => {
   );
 };
 
+export const uploadBurstImage = (file) => {
+  const formData = new FormData();
+  formData.append("images", file);
+
+  return api.post(
+    `${import.meta.env.VITE_BASE_URL}/bursts/upload-images`,
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    },
+  );
+};
+
+export const createBurst = (data) => {
+  return api.post(`${import.meta.env.VITE_BASE_URL}/bursts`, data);
+};
+
+export const getBursts = ({
+  limit = 10,
+  offset = 1,
+  sort = "DESC",
+  filter = "all",
+} = {}) => {
+  return api.get(
+    `${import.meta.env.VITE_BASE_URL}/bursts?sortBy=createdAt:${sort}&limit=${limit}&offset=${offset}&filter=${filter}`,
+  );
+};
+
+export const getBurst = async (burstId) => {
+  const { data } = await api.get(
+    `${import.meta.env.VITE_BASE_URL}/bursts/${burstId}`,
+  );
+
+  return data.content;
+};
+
 export const updateBio = (bio) => {
   return api.patch(`${import.meta.env.VITE_BASE_URL}/users/update-profile`, {
     bio,

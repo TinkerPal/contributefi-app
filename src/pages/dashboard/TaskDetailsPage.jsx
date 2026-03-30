@@ -74,6 +74,7 @@ function TaskDetailsPage() {
         <div className="md:hidden">
           <BackButton />
         </div>
+        
         <div className="space-y-16 rounded-[4px] bg-white p-4">
           {loadingQuest ? (
             <Loader />

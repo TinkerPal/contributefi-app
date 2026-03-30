@@ -191,14 +191,14 @@ export default function CustomSelect({
       )}
 
       <Select
-        value={value}
+        value={value || undefined}
         onValueChange={handleValueChange}
         disabled={disabled}
       >
         <SelectTrigger
-          className={`w-full rounded-[12px] border-2 border-none border-red-500 bg-[#F7F9FD] px-3 py-6 text-base text-[#09032A] focus:ring-0 focus:outline-none focus-visible:ring-0 ${className}`}
+          className={`w-full truncate rounded-[12px] border-2 border-none border-red-500 bg-[#F7F9FD] px-3 py-6 text-base text-[#09032A] focus:ring-0 focus:outline-none focus-visible:ring-0 ${className}`}
         >
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={placeholder} className="truncate" />
         </SelectTrigger>
 
         <SelectContent>
@@ -207,6 +207,7 @@ export default function CustomSelect({
               <SelectItem
                 key={opt.value || opt.name || index}
                 value={opt.value || opt.name}
+                className="truncate"
               >
                 {opt.label || opt.name || opt.doc}
               </SelectItem>

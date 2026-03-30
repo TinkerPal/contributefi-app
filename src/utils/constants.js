@@ -1,8 +1,35 @@
 export const REWARD_MODES = ["Overall Reward", "Individual Task Reward"];
+export const SENTIMENT_CHECK = ["Positive", "Neutral", "Negative"];
 
 export const REWARD_TYPES = [
   { label: "Points", value: "Points" },
   { label: "Token", value: "Token" },
+];
+
+export const SOCIAL_MEDIA_PLATFORM = [
+  { label: "X (Twitter)", value: "X (Twitter)" },
+  { label: "Discord", value: "Discord" },
+  { label: "Telegram", value: "Telegram" },
+  { label: "Facebook", value: "Facebook" },
+];
+
+export const POST_START_TIME = [
+  { label: "Post started within 2hrs", value: "Post started within 2hrs" },
+  { label: "Post started within 4hrs", value: "Post started within 4hrs" },
+  { label: "Post started within 8hrs", value: "Post started within 8hrs" },
+  { label: "Post started within 12hrs", value: "Post started within 12hrs" },
+  { label: "Post started within 24hrs", value: "Post started within 24hrs" },
+];
+
+export const BURST_SELECTION_METHOD = [
+  {
+    label: "Automated",
+    value: "Automated: AI selects and publishes the best entry",
+  },
+  {
+    label: "Assisted",
+    value: "Assisted: AI shortlists; manual review required",
+  },
 ];
 
 export const NETWORK_TYPES = [

@@ -90,7 +90,7 @@ function Tasks() {
                 variant="outline"
                 className={`flex-1 cursor-pointer rounded-[2px] border-none ${taskView === "active-tasks" ? "bg-white text-[#2F0FD1]" : "bg-[#F7F9FD] text-[#525866]"} p-2 text-[15px] hover:bg-white hover:text-[#2F0FD1]`}
               >
-                Active Tasks
+                Active
               </Button>
 
               <Button
